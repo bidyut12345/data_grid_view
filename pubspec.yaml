@@ -1,24 +1,26 @@
 name: data_grid_view
-description: A new Flutter package project.
+description: DataGridView widget similar to Winforms DataGridView with XLS/PDF export support and Direct Prinitng Support.
 version: 0.0.1
 homepage:
+repository: https://github.com/bidyut12345/data_grid_view.git
 
 environment:
   sdk: ">=2.16.2 <3.0.0"
   flutter: ">=1.17.0"
 
 dependencies:
+  collection: ^1.15.0
   flutter:
     sdk: flutter
+  linked_scroll_controller: ^0.2.0
+  pdf: ^3.8.2
+  printing: ^5.9.2
+  syncfusion_flutter_xlsio: ^20.2.43-beta
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^1.0.0
-  linked_scroll_controller: ^0.2.0
-  pdf: ^3.8.2
-  printing: ^5.9.2
-  syncfusion_flutter_xlsio: ^20.2.43-beta
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

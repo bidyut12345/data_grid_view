@@ -2,6 +2,8 @@ library data_grid_view;
 
 import 'dart:io';
 
+import 'package:data_grid_view/data_grid_view_cell.dart';
+import 'package:data_grid_view/data_grid_view_column.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:linked_scroll_controller/linked_scroll_controller.dart';
@@ -13,6 +15,8 @@ import 'package:syncfusion_flutter_xlsio/xlsio.dart' as xls;
 // import 'package:excel/excel.dart';
 // import 'dart:io';
 // import 'package:path/path.dart';
+
+double _extraCellPadding = 2.0;
 
 class DataGridView extends StatefulWidget {
   const DataGridView({
@@ -29,6 +33,13 @@ class DataGridView extends StatefulWidget {
     this.autoGenerateColumnDetails,
     this.scrollBarThickness = 40,
     this.maxColumnWidth = 300,
+    this.showExportExcelButton = false,
+    this.showExportPDFButton = false,
+    this.columnHeaderColor = Colors.black26,
+    this.rowHeaderColor = Colors.black12,
+    this.dataColumnHeadertexts,
+    this.dataColumnWidths,
+    this.hiddenDataColumns,
   }) : super(key: key);
 
   final List<Map<String, dynamic>> data;
@@ -43,6 +54,14 @@ class DataGridView extends StatefulWidget {
   final List<DataGridViewColumn>? additonalColumnsRight;
   final List<DataGridViewColumn>? autoGenerateColumnDetails;
   final double scrollBarThickness;
+  final bool showExportExcelButton;
+  final bool showExportPDFButton;
+  final Color columnHeaderColor;
+  final Color rowHeaderColor;
+  final Map<String, String>? dataColumnHeadertexts;
+  final Map<String, double>? dataColumnWidths;
+  final List<String>? hiddenDataColumns;
+
   @override
   State<DataGridView> createState() => _DataGridViewState();
 
@@ -100,43 +119,56 @@ class DataGridView extends StatefulWidget {
   }
 
   static Map<int, dynamic> generateColumnWidthAndRowHeight(
-      List<Map<String, dynamic>> data, double defaultColumnWidth, double maxColumnWidth, double defaultRowHeight) {
+    List<Map<String, dynamic>> data,
+    double defaultColumnWidth,
+    double maxColumnWidth,
+    double defaultRowHeight,
+    List<String>? hiddenDataColumns,
+    Map<String, String>? dataColumnHeadertexts,
+    Map<String, double>? dataColumnWidths,
+  ) {
     Map<String, double> columnWidths = {};
     Map<int, double> rowHeights = {};
-    data.first.keys.toList().forEach((fieldname) {
-      double maxFieldWidth = defaultColumnWidth;
-      TextStyle style = const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black);
-      TextPainter textPainter = TextPainter()
-        ..text = TextSpan(text: fieldname, style: style)
-        ..textDirection = TextDirection.ltr
-        ..layout(minWidth: 0, maxWidth: maxColumnWidth);
-      if (maxFieldWidth < textPainter.width + 10) {
-        maxFieldWidth = textPainter.width + 10;
-      }
-      style = const TextStyle(fontSize: 16.0, color: Colors.black);
 
-      for (int i = 0; i < data.length; i++) {
-        Map<String, dynamic> rowData = data[i];
-        textPainter = TextPainter()
-          ..text = TextSpan(text: rowData[fieldname].toString(), style: style)
-          ..textDirection = TextDirection.ltr
-          ..layout(minWidth: 0, maxWidth: maxColumnWidth);
-        if (maxFieldWidth < textPainter.width + 4) {
-          maxFieldWidth = textPainter.width + 4;
-        }
-        if ((rowHeights[i] ?? defaultRowHeight) < textPainter.height + 4) {
-          rowHeights[i] = textPainter.height + 4;
+    data.first.keys.toList().forEach((fieldname) {
+      if (!(hiddenDataColumns ?? []).contains(fieldname)) {
+        if ((dataColumnWidths ?? {}).containsKey(fieldname)) {
+          columnWidths.addAll({fieldname: dataColumnWidths![fieldname]!});
+        } else {
+          double maxFieldWidth = defaultColumnWidth;
+          TextStyle style = const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black);
+          TextPainter textPainter = TextPainter()
+            ..text = TextSpan(text: (dataColumnHeadertexts ?? {})[fieldname] ?? fieldname, style: style)
+            ..textDirection = TextDirection.ltr
+            ..layout(minWidth: 0, maxWidth: maxColumnWidth);
+          if (maxFieldWidth < textPainter.width + 10) {
+            maxFieldWidth = textPainter.width + 10;
+          }
+          style = const TextStyle(fontSize: 16.0, color: Colors.black);
+          for (int i = 0; i < data.length; i++) {
+            Map<String, dynamic> rowData = data[i];
+            textPainter = TextPainter()
+              ..text = TextSpan(text: rowData[fieldname].toString(), style: style)
+              ..textDirection = TextDirection.ltr
+              ..layout(minWidth: 0, maxWidth: maxColumnWidth);
+            if (maxFieldWidth < textPainter.width + 10) {
+              maxFieldWidth = textPainter.width + 10;
+            }
+            if ((rowHeights[i] ?? defaultRowHeight) < textPainter.height + 4) {
+              rowHeights[i] = textPainter.height + 4;
+            }
+          }
+          columnWidths.addAll({fieldname: maxFieldWidth});
         }
       }
-      columnWidths.addAll({fieldname: maxFieldWidth});
     });
     return {0: columnWidths, 1: rowHeights};
   }
 
-  static generateExcel(List<Map<String, dynamic>> data) async {
-// Create a new Excel document.
+  static generateExcel(List<Map<String, dynamic>> data, String fileName) async {
+    // Create a new Excel document.
     final xls.Workbook workbook = xls.Workbook();
-//Accessing worksheet via index.
+    //Accessing worksheet via index.
     final xls.Worksheet sheet = workbook.worksheets[0];
     sheet.name = "Report";
 
@@ -196,68 +228,14 @@ class DataGridView extends StatefulWidget {
       sheet.autoFitRow(element + 1);
     }
 
-// //Add Text.
-//     sheet.getRangeByName('A1').setText('Hello World');
-// //Add Number
-//     sheet.getRangeByName('A3').setNumber(44);
-// //set border color by hexa decimal.
-//     // globalStyle.borders.all.color = '#9954CC';
-//     sheet.getRangeByName('A1').cellStyle = headerStyle;
-// //Add DateTime
-//     sheet.getRangeByName('A5').setDateTime(DateTime(2020, 12, 12, 1, 10, 20));
-// // Save the document.
     final List<int> bytes = workbook.saveAsStream();
-    File('AddingTextNumberDateTime.xlsx').writeAsBytes(bytes);
-//Dispose the workbook.
+    if (!fileName.toLowerCase().endsWith(".xlsx")) {
+      fileName += ".xlsx";
+    }
+    File(fileName).writeAsBytes(bytes);
+    //Dispose the workbook.
     workbook.dispose();
-
-    // var excel = Excel.createExcel();
-
-    // Sheet sheetObject = excel[excel.sheets.keys.toList().first];
-    // CellStyle cellStyle = CellStyle(backgroundColorHex: "#1AFF1A", fontFamily: getFontFamily(FontFamily.Calibri));
-
-    // cellStyle.underline = Underline.Single; // or Underline.Double
-    // var cell = sheetObject.cell(CellIndex.indexByString("B4"));
-    // cell.value = 8; // dynamic values support provided;
-    // cell.cellStyle = cellStyle;
-    // excel.updateCell(sheetObject.sheetName, CellIndex.indexByString("A2"), "Here value");
-    // excel.tables.values.first.row(0)[0]!.
-    // // printing cell-type
-    // print("CellType: " + cell.cellType.toString());
-
-    // ///
-    // /// Inserting and removing column and rows
-
-    // // insert column at index = 8
-    // sheetObject.insertColumn(8);
-
-    // // remove column at index = 18
-    // sheetObject.removeColumn(18);
-
-    // // insert row at index = 82
-    // sheetObject.insertRow(82);
-
-    // // remove row at index = 80
-    // sheetObject.removeRow(80);
-
-    // var fileBytes = excel.save();
-    // // var directory = await getApplicationDocumentsDirectory();
-
-    // File("output_file_name.xlsx")
-    //   ..createSync(recursive: true)
-    //   ..writeAsBytesSync(fileBytes!);
   }
-}
-
-class DataGridViewColumn {
-  DataGridViewColumn({
-    required this.columnWidth,
-    required this.headerText,
-    required this.dataField,
-  });
-  final double columnWidth;
-  final String headerText;
-  final String dataField;
 }
 
 class _DataGridViewState extends State<DataGridView> {
@@ -282,7 +260,15 @@ class _DataGridViewState extends State<DataGridView> {
     _firstColumnController = _controllers2.addAndGet();
     _restColumnsController = _controllers2.addAndGet();
     _lastColumnController = _controllers2.addAndGet();
-    var data = DataGridView.generateColumnWidthAndRowHeight(widget.data, widget.defaultColumnWidth, widget.maxColumnWidth, widget.defaultRowHeight);
+    var data = DataGridView.generateColumnWidthAndRowHeight(
+      widget.data,
+      widget.defaultColumnWidth,
+      widget.maxColumnWidth,
+      widget.defaultRowHeight,
+      widget.hiddenDataColumns,
+      widget.dataColumnHeadertexts,
+      widget.dataColumnWidths,
+    );
     columnWidths = data[0];
     rowHeights = data[1];
   }
@@ -303,27 +289,34 @@ class _DataGridViewState extends State<DataGridView> {
 
   @override
   Widget build(BuildContext context) {
+    bool isScrollVisible = (kIsWeb ? true : Platform.isLinux || Platform.isMacOS || Platform.isWindows);
+    double scrollBarThickness = isScrollVisible ? widget.scrollBarThickness : 5;
     return Column(
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ElevatedButton(
-                  child: Text("Generate PDF"),
-                  onPressed: () async {
-                    DataGridView.generatePDF(widget.data, "Report", true, columnWidths, widget.defaultColumnWidth, "Report.pdf", scale: 0.5);
-                  }),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ElevatedButton(
-                  child: Text("Generate Excel"),
-                  onPressed: () async {
-                    DataGridView.generateExcel(widget.data);
-                  }),
-            ),
+            widget.showExportPDFButton
+                ? Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(
+                        child: const Text("Generate PDF"),
+                        onPressed: () async {
+                          DataGridView.generatePDF(widget.data, "Report", true, columnWidths, widget.defaultColumnWidth, "Report.pdf", scale: 0.5);
+                        }),
+                  )
+                : Container(),
+            widget.showExportExcelButton
+                ? Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(
+                      child: const Text("Generate Excel"),
+                      onPressed: () async {
+                        DataGridView.generateExcel(widget.data, "Report.xlsx");
+                      },
+                    ),
+                  )
+                : Container(),
           ],
         ),
         //Header
@@ -336,11 +329,13 @@ class _DataGridViewState extends State<DataGridView> {
               //Row Header Column
               widget.isRowheader
                   ? DataGridViewCell(
-                      color: Colors.yellow.withOpacity(0.3),
+                      color: widget.columnHeaderColor,
                       text: "",
                       cellWidth: widget.defaultRowHeaderWidth,
                       cellHeight: widget.defaultRowHeight,
                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black),
+                      onCellPressed: () {},
+                      extraCellheight: _extraCellPadding,
                     )
                   : Container(),
               //Column Header
@@ -350,29 +345,43 @@ class _DataGridViewState extends State<DataGridView> {
                   physics: const ClampingScrollPhysics(),
                   scrollDirection: Axis.horizontal,
                   children: (widget.additonalColumnsLeft ?? [])
-                          .map((e) => DataGridViewCell(
-                                color: Colors.yellow.withOpacity(0.3),
-                                text: e.headerText,
-                                cellWidth: columnWidths[e.dataField] ?? widget.defaultColumnWidth,
-                                cellHeight: widget.defaultRowHeight,
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black),
-                              ))
+                          .map(
+                            (e) => DataGridViewCell(
+                              color: widget.columnHeaderColor,
+                              text: e.headerText,
+                              cellWidth: e.columnWidth ?? widget.defaultColumnWidth,
+                              cellHeight: widget.defaultRowHeight,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                                color: Colors.black,
+                              ),
+                              onCellPressed: () {},
+                              extraCellheight: _extraCellPadding,
+                            ),
+                          )
                           .toList() +
                       widget.data.first.keys
                           .map(
                             (e) => DataGridViewCell(
-                              color: Colors.yellow.withOpacity(0.3),
+                              color: widget.columnHeaderColor,
                               text: e,
                               cellWidth: columnWidths[e] ?? widget.defaultColumnWidth,
                               cellHeight: widget.defaultRowHeight,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                                color: Colors.black,
+                              ),
+                              onCellPressed: () {},
+                              extraCellheight: _extraCellPadding,
                             ),
                           )
                           .toList(),
                 ),
               ),
               //Right hand side scrollbar leave space
-              SizedBox(width: widget.scrollBarThickness),
+              SizedBox(width: scrollBarThickness),
             ],
           ),
         ),
@@ -391,10 +400,12 @@ class _DataGridViewState extends State<DataGridView> {
                           physics: const ClampingScrollPhysics(),
                           children: List.generate(widget.data.length, (index) {
                             return DataGridViewCell(
-                              color: Colors.yellow.withOpacity(0.3),
+                              color: widget.rowHeaderColor,
                               text: (index + 1).toString(),
-                              cellHeight: rowHeights[index] ?? widget.defaultRowHeight,
+                              cellHeight: (rowHeights[index] ?? widget.defaultRowHeight) + _extraCellPadding,
                               cellWidth: widget.defaultColumnWidth,
+                              onCellPressed: () {},
+                              extraCellheight: _extraCellPadding,
                             );
                           }),
                         ),
@@ -405,36 +416,63 @@ class _DataGridViewState extends State<DataGridView> {
               Expanded(
                 child: Scrollbar(
                   controller: _bodyController,
-                  isAlwaysShown: true,
-                  thickness: widget.scrollBarThickness,
+                  isAlwaysShown: isScrollVisible,
+                  thickness: scrollBarThickness,
                   child: SingleChildScrollView(
                     controller: _bodyController,
                     scrollDirection: Axis.horizontal,
                     physics: const ClampingScrollPhysics(),
                     child: SizedBox(
-                      width: columnWidths.values.toList().sum,
+                      //Row
+                      width: columnWidths.values.toList().sum +
+                          (widget.additonalColumnsLeft ?? []).map((e) => e.columnWidth ?? widget.defaultColumnWidth).toList().sum,
                       child: ScrollConfiguration(
                         behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
                         child: ListView(
+                          //Cells
                           controller: _restColumnsController,
                           physics: const ClampingScrollPhysics(),
                           children: Function.apply(() {
-                            List<Widget> ll = List.generate(widget.data.length, (rowIndex) {
+                            List<Widget> ll = [];
+                            ll.addAll(List.generate(widget.data.length, (rowIndex) {
+                              int cellIndec = -1;
                               return Row(
-                                children: List.generate(widget.data.first.keys.length, (cellIndex) {
-                                  return DataGridViewCell(
-                                    text: widget.data[rowIndex][widget.data.first.keys.toList()[cellIndex].toString()].toString(),
-                                    color: null,
-                                    cellHeight: rowHeights[rowIndex] ?? widget.defaultRowHeight,
-                                    cellWidth: columnWidths[widget.data.first.keys.toList()[cellIndex].toString()] ?? widget.defaultColumnWidth,
-                                  );
-                                }),
+                                children: (widget.additonalColumnsLeft ?? []).map((e) {
+                                      cellIndec++;
+                                      return DataGridViewCell(
+                                        text: e.cellText ?? "",
+                                        color: null,
+                                        toolTip: e.toolTip,
+                                        cellHeight: (rowHeights[rowIndex] ?? widget.defaultRowHeight) + _extraCellPadding,
+                                        cellWidth: e.columnWidth ?? widget.defaultColumnWidth,
+                                        onCellPressed: () {
+                                          if (e.onCellPressed != null) {
+                                            e.onCellPressed!(rowIndex, cellIndec,
+                                                (e.onClickReturnFieldNames ?? []).map((cellname) => widget.data[rowIndex][cellname]).toList());
+                                          }
+                                        },
+                                        columnType: e.columnType,
+                                        iconData: e.iconData,
+                                        extraCellheight: _extraCellPadding,
+                                      );
+                                    }).toList() +
+                                    List.generate(widget.data.first.keys.length, (cellIndex) {
+                                      cellIndec++;
+                                      return DataGridViewCell(
+                                        text: widget.data[rowIndex][widget.data.first.keys.toList()[cellIndex].toString()].toString(),
+                                        color: null,
+                                        cellHeight: (rowHeights[rowIndex] ?? widget.defaultRowHeight) + _extraCellPadding,
+                                        cellWidth: columnWidths[widget.data.first.keys.toList()[cellIndex].toString()] ?? widget.defaultColumnWidth,
+                                        onCellPressed: () {},
+                                        extraCellheight: _extraCellPadding,
+                                      );
+                                    }),
                               );
-                            });
+                            }));
                             //Last Row
                             ll.add(SizedBox(
                               width: columnWidths.values.toList().sum,
-                              height: widget.scrollBarThickness,
+                              height: scrollBarThickness + 3,
                             ));
                             return ll;
                           }, null),
@@ -444,12 +482,13 @@ class _DataGridViewState extends State<DataGridView> {
                   ),
                 ),
               ),
+
               SizedBox(
-                width: widget.scrollBarThickness,
+                width: scrollBarThickness + 3,
                 child: Scrollbar(
                   controller: _lastColumnController,
-                  isAlwaysShown: true,
-                  thickness: widget.scrollBarThickness,
+                  isAlwaysShown: isScrollVisible,
+                  thickness: scrollBarThickness,
                   child: ScrollConfiguration(
                     behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
                     child: ListView(
@@ -457,13 +496,13 @@ class _DataGridViewState extends State<DataGridView> {
                       physics: const ClampingScrollPhysics(),
                       children: List.generate(widget.data.length, (rowIndex) {
                             return SizedBox(
-                              height: rowHeights[rowIndex] ?? widget.defaultRowHeight,
+                              height: (rowHeights[rowIndex] ?? widget.defaultRowHeight) + (_extraCellPadding * 2),
                             );
                           }) +
                           [
                             SizedBox(
-                              width: widget.scrollBarThickness,
-                              height: widget.defaultRowHeight,
+                              width: scrollBarThickness,
+                              height: scrollBarThickness + 3,
                             )
                           ],
                     ),
@@ -487,57 +526,6 @@ class _DataGridViewState extends State<DataGridView> {
         //   scrollController: _footController,
         // ),
       ],
-    );
-  }
-}
-
-class DataGridViewCell extends StatelessWidget {
-  final String text;
-  final Color? color;
-  final double cellWidth;
-  final double cellHeight;
-  final TextStyle? style;
-  const DataGridViewCell({
-    Key? key,
-    required this.text,
-    this.color,
-    required this.cellWidth,
-    required this.cellHeight,
-    this.style,
-  }) : super(key: key);
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: cellWidth,
-      height: cellHeight,
-      decoration: BoxDecoration(
-        color: color,
-        border: Border.all(
-          color: Colors.black12,
-          width: 1.0,
-        ),
-      ),
-      alignment: Alignment.center,
-      child: TextButton(
-        style: ButtonStyle(
-          padding: MaterialStateProperty.resolveWith<EdgeInsetsGeometry>((states) => const EdgeInsets.all(2)),
-        ),
-        onPressed: () {},
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(0.0),
-            child: Tooltip(
-              message: "", //text == "null" ? "" : text,
-              child: Text(
-                text == "null" ? "" : text,
-                style: style ?? const TextStyle(fontSize: 16.0, color: Colors.black),
-                textAlign: TextAlign.center,
-                // maxLines: 1,
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

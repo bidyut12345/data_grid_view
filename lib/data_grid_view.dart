@@ -12,11 +12,25 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:syncfusion_flutter_xlsio/xlsio.dart' as xls;
+
+export 'data_grid_view_column.dart';
+export 'data_grid_view_cell.dart';
 // import 'package:excel/excel.dart';
 // import 'dart:io';
 // import 'package:path/path.dart';
 
 double _extraCellPadding = 2.0;
+
+class DataGridViewController {
+  Function({String finalName, double scale})? generatePdf;
+  Function? generateXls;
+  Function? printPreview;
+  void dispose() {
+    generatePdf = null;
+    generateXls = null;
+    printPreview = null;
+  }
+}
 
 class DataGridView extends StatefulWidget {
   const DataGridView({
@@ -40,6 +54,7 @@ class DataGridView extends StatefulWidget {
     this.dataColumnHeadertexts,
     this.dataColumnWidths,
     this.hiddenDataColumns,
+    this.controller,
   }) : super(key: key);
 
   final List<Map<String, dynamic>> data;
@@ -61,13 +76,19 @@ class DataGridView extends StatefulWidget {
   final Map<String, String>? dataColumnHeadertexts;
   final Map<String, double>? dataColumnWidths;
   final List<String>? hiddenDataColumns;
-
+  final DataGridViewController? controller;
   @override
   State<DataGridView> createState() => _DataGridViewState();
 
-  static generatePDF(
-      List<Map<String, dynamic>> data, String header, bool landscape, Map<String, double> columnWidths, double defaultColumnWidth, String filename,
-      {double scale = 1.0}) async {
+  static _generatePDF(
+    List<Map<String, dynamic>> data,
+    String header,
+    bool landscape,
+    Map<String, double> columnWidths,
+    double defaultColumnWidth,
+    String filename, {
+    double scale = 1.0,
+  }) async {
     Map<int, pw.TableColumnWidth> widths = {};
     for (int i = 0; i < data.first.keys.length; i++) {
       widths.addAll({i: pw.FlexColumnWidth(((columnWidths[data.first.keys.elementAt(i)] ?? defaultColumnWidth) * 1))});
@@ -118,7 +139,7 @@ class DataGridView extends StatefulWidget {
     }
   }
 
-  static Map<int, dynamic> generateColumnWidthAndRowHeight(
+  static Map<int, dynamic> _generateColumnWidthAndRowHeight(
     List<Map<String, dynamic>> data,
     double defaultColumnWidth,
     double maxColumnWidth,
@@ -165,7 +186,7 @@ class DataGridView extends StatefulWidget {
     return {0: columnWidths, 1: rowHeights};
   }
 
-  static generateExcel(List<Map<String, dynamic>> data, String fileName) async {
+  static _generateExcel(List<Map<String, dynamic>> data, String fileName) async {
     // Create a new Excel document.
     final xls.Workbook workbook = xls.Workbook();
     //Accessing worksheet via index.
@@ -260,7 +281,7 @@ class _DataGridViewState extends State<DataGridView> {
     _firstColumnController = _controllers2.addAndGet();
     _restColumnsController = _controllers2.addAndGet();
     _lastColumnController = _controllers2.addAndGet();
-    var data = DataGridView.generateColumnWidthAndRowHeight(
+    var data = DataGridView._generateColumnWidthAndRowHeight(
       widget.data,
       widget.defaultColumnWidth,
       widget.maxColumnWidth,
@@ -271,6 +292,26 @@ class _DataGridViewState extends State<DataGridView> {
     );
     columnWidths = data[0];
     rowHeights = data[1];
+
+    if (widget.controller != null) {
+      widget.controller?.generatePdf = ({String finalName = "Report.pdf", double scale = 1.0}) {
+        _generatePDF(finalName: finalName, scale: scale);
+      };
+      widget.controller?.generateXls = () {
+        _generateXls();
+      };
+      widget.controller?.printPreview = () {
+        _generatePDF();
+      };
+    }
+  }
+
+  _generatePDF({bool isPreview = false, String finalName = "Report.pdf", double scale = 1.0}) {
+    DataGridView._generatePDF(widget.data, "Report", true, columnWidths, widget.defaultColumnWidth, finalName, scale: 0.5);
+  }
+
+  _generateXls() {
+    DataGridView._generateExcel(widget.data, "Report.xlsx");
   }
 
   Map<String, double> columnWidths = {};
@@ -302,7 +343,7 @@ class _DataGridViewState extends State<DataGridView> {
                     child: ElevatedButton(
                         child: const Text("Generate PDF"),
                         onPressed: () async {
-                          DataGridView.generatePDF(widget.data, "Report", true, columnWidths, widget.defaultColumnWidth, "Report.pdf", scale: 0.5);
+                          _generatePDF();
                         }),
                   )
                 : Container(),
@@ -312,7 +353,7 @@ class _DataGridViewState extends State<DataGridView> {
                     child: ElevatedButton(
                       child: const Text("Generate Excel"),
                       onPressed: () async {
-                        DataGridView.generateExcel(widget.data, "Report.xlsx");
+                        _generateXls();
                       },
                     ),
                   )

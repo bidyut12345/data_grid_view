@@ -156,14 +156,19 @@ class DataGridView extends StatefulWidget {
         if ((dataColumnWidths ?? {}).containsKey(fieldname)) {
           columnWidths.addAll({fieldname: dataColumnWidths![fieldname]!});
         } else {
+          int additonalWidth = 10;
+          if(!kIsWeb && Platform.isMacOS)
+          { 
+            additonalWidth = 30;
+          }
           double maxFieldWidth = defaultColumnWidth;
           TextStyle style = const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black);
           TextPainter textPainter = TextPainter()
             ..text = TextSpan(text: (dataColumnHeadertexts ?? {})[fieldname] ?? fieldname, style: style)
             ..textDirection = TextDirection.ltr
             ..layout(minWidth: 0, maxWidth: maxColumnWidth);
-          if (maxFieldWidth < textPainter.width + 10) {
-            maxFieldWidth = textPainter.width + 10;
+          if (maxFieldWidth < textPainter.width + additonalWidth) {
+            maxFieldWidth = textPainter.width + additonalWidth;
           }
           style = const TextStyle(fontSize: 16.0, color: Colors.black);
           for (int i = 0; i < data.length; i++) {
@@ -171,9 +176,9 @@ class DataGridView extends StatefulWidget {
             textPainter = TextPainter()
               ..text = TextSpan(text: rowData[fieldname].toString(), style: style)
               ..textDirection = TextDirection.ltr
-              ..layout(minWidth: 0, maxWidth: maxColumnWidth);
-            if (maxFieldWidth < textPainter.width + 10) {
-              maxFieldWidth = textPainter.width + 10;
+              ..layout(minWidth: 0, maxWidth: maxColumnWidth); 
+            if (maxFieldWidth < textPainter.width + additonalWidth) {
+              maxFieldWidth = textPainter.width + additonalWidth;
             }
             if ((rowHeights[i] ?? defaultRowHeight) < textPainter.height + 4) {
               rowHeights[i] = textPainter.height + 4;

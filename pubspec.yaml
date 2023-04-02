@@ -9,13 +9,14 @@ environment:
   flutter: ">=1.17.0"
 
 dependencies:
-  collection: ^1.15.0
+  collection: ^1.17.0
   flutter:
     sdk: flutter
   linked_scroll_controller: ^0.2.0
-  pdf: ^3.8.2
-  printing: ^5.9.2
-  syncfusion_flutter_xlsio: ^20.2.43-beta
+  pdf: ^3.10.1
+  printing: ^5.10.3
+  syncfusion_flutter_xlsio: ^21.1.37
+  excel: ^2.1.0
 
 dev_dependencies:
   flutter_test:

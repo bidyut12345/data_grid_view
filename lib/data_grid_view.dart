@@ -22,8 +22,8 @@ export 'data_grid_view_cell.dart';
 double _extraCellPadding = 2.0;
 
 class DataGridViewController {
-  Function({String finalName, double scale})? generatePdf;
-  Function? generateXls;
+  Function({String fileName, double scale, String reportHeaderText})? generatePdf;
+  Function({String fileName, String reportHeaderText})? generateXls;
   Function? printPreview;
   void dispose() {
     generatePdf = null;
@@ -94,10 +94,16 @@ class DataGridView extends StatefulWidget {
       widths.addAll({i: pw.FlexColumnWidth(((columnWidths[data.first.keys.elementAt(i)] ?? defaultColumnWidth) * 1))});
     }
     var pdf = pw.Document();
+    var pageFormat = landscape ? PdfPageFormat.a4.landscape : PdfPageFormat.a4;
+    var newPageFomat = PdfPageFormat(
+      pageFormat.width,
+      pageFormat.height,
+      marginAll: 10,
+    );
     pdf.addPage(
       pw.MultiPage(
         maxPages: 10000,
-        pageFormat: landscape ? PdfPageFormat.a4.landscape : PdfPageFormat.a4,
+        pageFormat: newPageFomat,
         header: (context) => pw.Center(child: pw.Padding(padding: const pw.EdgeInsets.all(10), child: pw.Text(header, textScaleFactor: 1.5))),
         build: (pw.Context context) {
           return [
@@ -157,8 +163,7 @@ class DataGridView extends StatefulWidget {
           columnWidths.addAll({fieldname: dataColumnWidths![fieldname]!});
         } else {
           int additonalWidth = 10;
-          if(!kIsWeb && Platform.isMacOS)
-          { 
+          if (!kIsWeb && Platform.isMacOS) {
             additonalWidth = 30;
           }
           double maxFieldWidth = defaultColumnWidth;
@@ -174,9 +179,9 @@ class DataGridView extends StatefulWidget {
           for (int i = 0; i < data.length; i++) {
             Map<String, dynamic> rowData = data[i];
             textPainter = TextPainter()
-              ..text = TextSpan(text: rowData[fieldname].toString(), style: style)
+              ..text = TextSpan(text: rowData[fieldname].toString().trim(), style: style)
               ..textDirection = TextDirection.ltr
-              ..layout(minWidth: 0, maxWidth: maxColumnWidth); 
+              ..layout(minWidth: 0, maxWidth: maxColumnWidth);
             if (maxFieldWidth < textPainter.width + additonalWidth) {
               maxFieldWidth = textPainter.width + additonalWidth;
             }
@@ -191,12 +196,12 @@ class DataGridView extends StatefulWidget {
     return {0: columnWidths, 1: rowHeights};
   }
 
-  static _generateExcel(List<Map<String, dynamic>> data, String fileName) async {
+  static _generateExcel(List<Map<String, dynamic>> data, String fileName, String reportHeaderName) async {
     // Create a new Excel document.
     final xls.Workbook workbook = xls.Workbook();
     //Accessing worksheet via index.
     final xls.Worksheet sheet = workbook.worksheets[0];
-    sheet.name = "Report";
+    sheet.name = reportHeaderName;
 
     int startColIndex = 2;
     int startRowIndex = 2;
@@ -211,8 +216,10 @@ class DataGridView extends StatefulWidget {
 
     sheet.getRangeByIndex(rowIndex, colIndex, -1, colIndex + data.first.keys.toList().length - 1).merge();
     sheet.getRangeByIndex(rowIndex, colIndex).cellStyle = reportHeaderStyle;
+    sheet.getRangeByIndex(rowIndex, colIndex).setText(reportHeaderName);
+    rowIndex++;
 
-    xls.Style headerStyle = workbook.styles.add('hederStyle');
+    xls.Style headerStyle = workbook.styles.add('headerStyle');
     headerStyle.borders.all.lineStyle = xls.LineStyle.thin;
     headerStyle.bold = true;
     headerStyle.hAlign = xls.HAlignType.center;
@@ -299,11 +306,11 @@ class _DataGridViewState extends State<DataGridView> {
     rowHeights = data[1];
 
     if (widget.controller != null) {
-      widget.controller?.generatePdf = ({String finalName = "Report.pdf", double scale = 1.0}) {
-        _generatePDF(finalName: finalName, scale: scale);
+      widget.controller?.generatePdf = ({String fileName = "Report.pdf", double scale = 1.0, String reportHeaderText = "Report"}) {
+        _generatePDF(fileName: fileName, scale: scale, reportHeaderText: reportHeaderText);
       };
-      widget.controller?.generateXls = () {
-        _generateXls();
+      widget.controller?.generateXls = ({String fileName = "Report.slsx", String reportHeaderText = "Report"}) {
+        _generateXls(fileName: fileName, reportHeaderText: reportHeaderText);
       };
       widget.controller?.printPreview = () {
         _generatePDF();
@@ -311,12 +318,12 @@ class _DataGridViewState extends State<DataGridView> {
     }
   }
 
-  _generatePDF({bool isPreview = false, String finalName = "Report.pdf", double scale = 1.0}) {
-    DataGridView._generatePDF(widget.data, "Report", true, columnWidths, widget.defaultColumnWidth, finalName, scale: 0.5);
+  _generatePDF({bool isPreview = false, String fileName = "Report.pdf", double scale = 1.0, String reportHeaderText = "Report"}) {
+    DataGridView._generatePDF(widget.data, reportHeaderText, true, columnWidths, widget.defaultColumnWidth, fileName, scale: scale);
   }
 
-  _generateXls() {
-    DataGridView._generateExcel(widget.data, "Report.xlsx");
+  _generateXls({String fileName = "Report.xlsx", String reportHeaderText = "Report"}) {
+    DataGridView._generateExcel(widget.data, fileName, reportHeaderText);
   }
 
   Map<String, double> columnWidths = {};
@@ -367,7 +374,7 @@ class _DataGridViewState extends State<DataGridView> {
         ),
         //Header
         SizedBox(
-          height: widget.defaultRowHeight + 5,
+          height: widget.defaultRowHeight + 10,
           child: Row(
             mainAxisSize: MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -379,7 +386,11 @@ class _DataGridViewState extends State<DataGridView> {
                       text: "",
                       cellWidth: widget.defaultRowHeaderWidth,
                       cellHeight: widget.defaultRowHeight,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black),
+                      style: const TextStyle(
+                        // fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Color.fromARGB(255, 39, 39, 39),
+                      ),
                       onCellPressed: () {},
                       extraCellheight: _extraCellPadding,
                     )
@@ -398,32 +409,33 @@ class _DataGridViewState extends State<DataGridView> {
                               cellWidth: e.columnWidth ?? widget.defaultColumnWidth,
                               cellHeight: widget.defaultRowHeight,
                               style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                                color: Colors.black,
+                                // fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: Color.fromARGB(255, 39, 39, 39),
                               ),
                               onCellPressed: () {},
                               extraCellheight: _extraCellPadding,
                             ),
                           )
                           .toList() +
-                      widget.data.first.keys
-                          .map(
-                            (e) => DataGridViewCell(
-                              color: widget.columnHeaderColor,
-                              text: e,
-                              cellWidth: columnWidths[e] ?? widget.defaultColumnWidth,
-                              cellHeight: widget.defaultRowHeight,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                                color: Colors.black,
-                              ),
-                              onCellPressed: () {},
-                              extraCellheight: _extraCellPadding,
+                      widget.data.first.keys.map(
+                        (e) {
+                          return DataGridViewCell(
+                            color: widget.columnHeaderColor,
+                            text: e,
+                            cellWidth: columnWidths[e] ?? widget.defaultColumnWidth,
+                            visible: !(widget.hiddenDataColumns ?? []).contains(e),
+                            cellHeight: widget.defaultRowHeight,
+                            style: const TextStyle(
+                              // fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: Color.fromARGB(255, 39, 39, 39),
                             ),
-                          )
-                          .toList(),
+                            onCellPressed: () {},
+                            extraCellheight: _extraCellPadding,
+                          );
+                        },
+                      ).toList(),
                 ),
               ),
               //Right hand side scrollbar leave space
@@ -504,11 +516,13 @@ class _DataGridViewState extends State<DataGridView> {
                                     }).toList() +
                                     List.generate(widget.data.first.keys.length, (cellIndex) {
                                       cellIndec++;
+                                      String cellName = widget.data.first.keys.toList()[cellIndex].toString();
                                       return DataGridViewCell(
-                                        text: widget.data[rowIndex][widget.data.first.keys.toList()[cellIndex].toString()].toString(),
+                                        text: widget.data[rowIndex][cellName].toString().trim(),
                                         color: null,
                                         cellHeight: (rowHeights[rowIndex] ?? widget.defaultRowHeight) + _extraCellPadding,
-                                        cellWidth: columnWidths[widget.data.first.keys.toList()[cellIndex].toString()] ?? widget.defaultColumnWidth,
+                                        cellWidth: columnWidths[cellName] ?? widget.defaultColumnWidth,
+                                        visible: !(widget.hiddenDataColumns ?? []).contains(cellName),
                                         onCellPressed: () {},
                                         extraCellheight: _extraCellPadding,
                                       );

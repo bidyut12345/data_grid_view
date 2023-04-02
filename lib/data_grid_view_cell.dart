@@ -12,6 +12,7 @@ class DataGridViewCell extends StatelessWidget {
   final ColumnType columnType;
   final IconData? iconData;
   final double extraCellheight;
+  final bool visible;
 
   const DataGridViewCell({
     Key? key,
@@ -25,48 +26,26 @@ class DataGridViewCell extends StatelessWidget {
     this.columnType = ColumnType.textColumn,
     required this.onCellPressed,
     required this.extraCellheight,
+    this.visible = true,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: cellWidth,
-      height: cellHeight + extraCellheight,
-      decoration: BoxDecoration(
-        color: color,
-        border: Border.all(
-          color: Colors.black12,
-          width: 1.0,
-        ),
-      ),
-      alignment: Alignment.center,
-      child: columnType == ColumnType.textColumn
-          ? TextButton(
-              style: ButtonStyle(
-                padding: MaterialStateProperty.resolveWith<EdgeInsetsGeometry>((states) => const EdgeInsets.all(2)),
+    return !visible
+        ? Container()
+        : Container(
+            width: cellWidth,
+            height: cellHeight + extraCellheight,
+            decoration: BoxDecoration(
+              color: color,
+              border: Border.all(
+                color: Colors.black12,
+                width: 1.0,
               ),
-              onPressed: () {
-                onCellPressed();
-              },
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(0.0),
-                  child: Tooltip(
-                    message: toolTip ?? "", //text == "null" ? "" : text,
-                    child: Text(
-                      text == "null" ? "" : text,
-                      style: style ?? const TextStyle(fontSize: 16.0, color: Colors.black),
-                      textAlign: TextAlign.center,
-                      // maxLines: 1,
-                    ),
-                  ),
-                ),
-              ),
-            )
-          : columnType == ColumnType.elevatedButtonColumn
-              ? Padding(
-                  padding: const EdgeInsets.all(0.0),
-                  child: ElevatedButton(
+            ),
+            alignment: Alignment.center,
+            child: columnType == ColumnType.textColumn
+                ? TextButton(
                     style: ButtonStyle(
                       padding: MaterialStateProperty.resolveWith<EdgeInsetsGeometry>((states) => const EdgeInsets.all(2)),
                     ),
@@ -80,24 +59,56 @@ class DataGridViewCell extends StatelessWidget {
                           message: toolTip ?? "", //text == "null" ? "" : text,
                           child: Text(
                             text == "null" ? "" : text,
-                            style: style ?? const TextStyle(fontSize: 16.0, color: Colors.black),
+                            style: style ??
+                                const TextStyle(
+                                  fontSize: 14.0,
+                                  color: Color.fromARGB(255, 39, 39, 39),
+                                ),
                             textAlign: TextAlign.center,
                             // maxLines: 1,
                           ),
                         ),
                       ),
                     ),
-                  ))
-              : Tooltip(
-                  message: toolTip ?? "", //text == "null" ? "" : text,
-                  child: IconButton(
-                    icon: Icon(iconData ?? Icons.error),
-                    padding: const EdgeInsets.all(2),
-                    onPressed: () {
-                      onCellPressed();
-                    },
-                  ),
-                ),
-    );
+                  )
+                : columnType == ColumnType.elevatedButtonColumn
+                    ? Padding(
+                        padding: const EdgeInsets.all(0.0),
+                        child: ElevatedButton(
+                          style: ButtonStyle(
+                            padding: MaterialStateProperty.resolveWith<EdgeInsetsGeometry>((states) => const EdgeInsets.all(2)),
+                          ),
+                          onPressed: () {
+                            onCellPressed();
+                          },
+                          child: Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(0.0),
+                              child: Tooltip(
+                                message: toolTip ?? "", //text == "null" ? "" : text,
+                                child: Text(
+                                  text == "null" ? "" : text,
+                                  style: style ?? const TextStyle(fontSize: 16.0, color: Colors.black),
+                                  textAlign: TextAlign.center,
+                                  // maxLines: 1,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ))
+                    : Tooltip(
+                        message: toolTip ?? "", //text == "null" ? "" : text,
+                        child: IconButton(
+                          icon: Icon(
+                            iconData ?? Icons.error,
+                            size: 18,
+                          ),
+                          padding: const EdgeInsets.all(2),
+                          onPressed: () {
+                            onCellPressed();
+                          },
+                        ),
+                      ),
+          );
   }
 }

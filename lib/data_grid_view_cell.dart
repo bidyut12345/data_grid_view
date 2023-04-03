@@ -13,6 +13,7 @@ class DataGridViewCell extends StatelessWidget {
   final IconData? iconData;
   final double extraCellheight;
   final bool visible;
+  final Alignment alignment;
 
   const DataGridViewCell({
     Key? key,
@@ -26,6 +27,7 @@ class DataGridViewCell extends StatelessWidget {
     this.columnType = ColumnType.textColumn,
     required this.onCellPressed,
     required this.extraCellheight,
+    required this.alignment,
     this.visible = true,
   }) : super(key: key);
 
@@ -43,7 +45,7 @@ class DataGridViewCell extends StatelessWidget {
                 width: 1.0,
               ),
             ),
-            alignment: Alignment.center,
+            alignment: alignment,
             child: columnType == ColumnType.textColumn
                 ? TextButton(
                     style: ButtonStyle(
@@ -52,11 +54,12 @@ class DataGridViewCell extends StatelessWidget {
                     onPressed: () {
                       onCellPressed();
                     },
-                    child: Center(
+                    child: Align(
+                      alignment: alignment,
                       child: Padding(
                         padding: const EdgeInsets.all(0.0),
                         child: Tooltip(
-                          message: toolTip ?? "", //text == "null" ? "" : text,
+                          message: toolTip ?? "",
                           child: Text(
                             text == "null" ? "" : text,
                             style: style ??
@@ -64,8 +67,11 @@ class DataGridViewCell extends StatelessWidget {
                                   fontSize: 14.0,
                                   color: Color.fromARGB(255, 39, 39, 39),
                                 ),
-                            textAlign: TextAlign.center,
-                            // maxLines: 1,
+                            textAlign: ([Alignment.bottomCenter, Alignment.topCenter, Alignment.center].contains(alignment))
+                                ? TextAlign.center
+                                : ([Alignment.topLeft, Alignment.bottomLeft, Alignment.centerLeft].contains(alignment))
+                                    ? TextAlign.left
+                                    : TextAlign.right,
                           ),
                         ),
                       ),
@@ -81,23 +87,27 @@ class DataGridViewCell extends StatelessWidget {
                           onPressed: () {
                             onCellPressed();
                           },
-                          child: Center(
+                          child: Align(
+                            alignment: alignment,
                             child: Padding(
                               padding: const EdgeInsets.all(0.0),
                               child: Tooltip(
-                                message: toolTip ?? "", //text == "null" ? "" : text,
+                                message: toolTip ?? "",
                                 child: Text(
                                   text == "null" ? "" : text,
                                   style: style ?? const TextStyle(fontSize: 16.0, color: Colors.black),
-                                  textAlign: TextAlign.center,
-                                  // maxLines: 1,
+                                  textAlign: ([Alignment.bottomCenter, Alignment.topCenter, Alignment.center].contains(alignment))
+                                      ? TextAlign.center
+                                      : ([Alignment.topLeft, Alignment.bottomLeft, Alignment.centerLeft].contains(alignment))
+                                          ? TextAlign.left
+                                          : TextAlign.right,
                                 ),
                               ),
                             ),
                           ),
                         ))
                     : Tooltip(
-                        message: toolTip ?? "", //text == "null" ? "" : text,
+                        message: toolTip ?? "",
                         child: IconButton(
                           icon: Icon(
                             iconData ?? Icons.error,

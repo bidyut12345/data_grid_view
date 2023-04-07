@@ -15,9 +15,6 @@ import 'package:syncfusion_flutter_xlsio/xlsio.dart' as xls;
 
 export 'data_grid_view_column.dart';
 export 'data_grid_view_cell.dart';
-// import 'package:excel/excel.dart';
-// import 'dart:io';
-// import 'package:path/path.dart';
 
 double _extraCellPadding = 2.0;
 
@@ -88,7 +85,7 @@ class DataGridView extends StatefulWidget {
 
   final double headerFontSize;
   final double cellFontSize;
-
+// final bool showS
   @override
   State<DataGridView> createState() => _DataGridViewState();
 
@@ -105,6 +102,7 @@ class DataGridView extends StatefulWidget {
     for (int i = 0; i < data.first.keys.length; i++) {
       widths.addAll({i: pw.FlexColumnWidth(((columnWidths[data.first.keys.elementAt(i)] ?? defaultColumnWidth) * 1))});
     }
+
     var pdf = pw.Document();
     var pageFormat = landscape ? PdfPageFormat.a4.landscape : PdfPageFormat.a4;
     var newPageFomat = PdfPageFormat(
@@ -176,10 +174,14 @@ class DataGridView extends StatefulWidget {
           columnWidths.addAll({fieldname: dataColumnWidths![fieldname]!});
         } else {
           int additonalWidth = 10;
+          int additionalHeight = 0;
           if (!kIsWeb && Platform.isMacOS) {
             additonalWidth = 30;
           }
-          int additionalHeight = 0;
+          if (!kIsWeb && Platform.isAndroid) {
+            additonalWidth = 30;
+            additionalHeight = 10;
+          }
           double maxFieldWidth = defaultColumnWidth;
           TextStyle style = TextStyle(fontSize: headerFontSize);
           TextPainter textPainter = TextPainter()
@@ -404,7 +406,7 @@ class _DataGridViewState extends State<DataGridView> {
                       cellHeight: widget.defaultRowHeight,
                       style: TextStyle(
                         // fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: widget.headerFontSize,
                         color: widget.textColor,
                       ),
                       onCellPressed: () {},
@@ -427,7 +429,7 @@ class _DataGridViewState extends State<DataGridView> {
                               cellHeight: widget.defaultRowHeight,
                               style: TextStyle(
                                 // fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                                fontSize: widget.headerFontSize,
                                 color: widget.textColor,
                               ),
                               onCellPressed: () {},
@@ -446,7 +448,7 @@ class _DataGridViewState extends State<DataGridView> {
                             cellHeight: widget.defaultRowHeight,
                             style: TextStyle(
                               // fontWeight: FontWeight.bold,
-                              fontSize: 16,
+                              fontSize: widget.headerFontSize,
                               color: widget.textColor,
                             ),
                             onCellPressed: () {},
@@ -484,7 +486,7 @@ class _DataGridViewState extends State<DataGridView> {
                               onCellPressed: () {},
                               extraCellheight: _extraCellPadding,
                               style: TextStyle(
-                                fontSize: 14.0,
+                                fontSize: widget.cellFontSize,
                                 color: widget.textColor,
                               ),
                               alignment: widget.cellAlignment,
@@ -537,7 +539,7 @@ class _DataGridViewState extends State<DataGridView> {
                                         iconData: e.iconData,
                                         extraCellheight: _extraCellPadding,
                                         style: TextStyle(
-                                          fontSize: 14.0,
+                                          fontSize: widget.cellFontSize,
                                           color: widget.textColor,
                                         ),
                                         alignment: widget.cellAlignment,
@@ -555,7 +557,7 @@ class _DataGridViewState extends State<DataGridView> {
                                         onCellPressed: () {},
                                         extraCellheight: _extraCellPadding,
                                         style: TextStyle(
-                                          fontSize: 14.0,
+                                          fontSize: widget.cellFontSize,
                                           color: widget.textColor,
                                         ),
                                         alignment: widget.cellAlignment,

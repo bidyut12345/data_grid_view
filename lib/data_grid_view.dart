@@ -173,7 +173,7 @@ class DataGridView extends StatefulWidget {
         if ((dataColumnWidths ?? {}).containsKey(fieldname)) {
           columnWidths.addAll({fieldname: dataColumnWidths![fieldname]!});
         } else {
-          int additonalWidth = 10;
+          int additonalWidth = 20;
           int additionalHeight = 0;
           if (!kIsWeb && Platform.isMacOS) {
             additonalWidth = 30;

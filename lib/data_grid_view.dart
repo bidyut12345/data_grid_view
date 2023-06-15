@@ -95,12 +95,18 @@ class DataGridView extends StatefulWidget {
     bool landscape,
     Map<String, double> columnWidths,
     double defaultColumnWidth,
-    String filename, {
+    String filename,
+    List<String> hiddenDataColumns, {
     double scale = 1.0,
   }) async {
     Map<int, pw.TableColumnWidth> widths = {};
     for (int i = 0; i < data.first.keys.length; i++) {
-      widths.addAll({i: pw.FlexColumnWidth(((columnWidths[data.first.keys.elementAt(i)] ?? defaultColumnWidth) * 1))});
+      String columnName = data.first.keys.elementAt(i);
+      if (hiddenDataColumns.contains(columnName)) {
+        widths.addAll({i: const pw.FixedColumnWidth(0)});
+      } else {
+        widths.addAll({i: pw.FlexColumnWidth(((columnWidths[columnName] ?? defaultColumnWidth) * 1))});
+      }
     }
 
     var pdf = pw.Document();
@@ -114,7 +120,8 @@ class DataGridView extends StatefulWidget {
       pw.MultiPage(
         maxPages: 10000,
         pageFormat: newPageFomat,
-        header: (context) => pw.Center(child: pw.Padding(padding: const pw.EdgeInsets.all(10), child: pw.Text(header, textScaleFactor: 1.5))),
+        header: (context) => pw.Center(
+            child: pw.Padding(padding: const pw.EdgeInsets.all(10), child: pw.Text(header, textScaleFactor: 1.5))),
         build: (pw.Context context) {
           return [
             pw.Table.fromTextArray(
@@ -253,7 +260,9 @@ class DataGridView extends StatefulWidget {
     for (var row in data) {
       colIndex = startColIndex;
       row.keys.toList().forEach((element) {
-        sheet.getRangeByIndex(rowIndex, colIndex).setText(row[element].toString() == "null" ? "" : row[element].toString());
+        sheet
+            .getRangeByIndex(rowIndex, colIndex)
+            .setText(row[element].toString() == "null" ? "" : row[element].toString());
         sheet.getRangeByIndex(rowIndex, colIndex).cellStyle = cellStyle;
         colIndex++;
       });
@@ -311,7 +320,8 @@ class _DataGridViewState extends State<DataGridView> {
     _lastColumnController = _controllers2.addAndGet();
 
     if (widget.controller != null) {
-      widget.controller?.generatePdf = ({String fileName = "Report.pdf", double scale = 1.0, String reportHeaderText = "Report"}) {
+      widget.controller?.generatePdf =
+          ({String fileName = "Report.pdf", double scale = 1.0, String reportHeaderText = "Report"}) {
         _generatePDF(fileName: fileName, scale: scale, reportHeaderText: reportHeaderText);
       };
       widget.controller?.generateXls = ({String fileName = "Report.slsx", String reportHeaderText = "Report"}) {
@@ -323,8 +333,14 @@ class _DataGridViewState extends State<DataGridView> {
     }
   }
 
-  _generatePDF({bool isPreview = false, String fileName = "Report.pdf", double scale = 1.0, String reportHeaderText = "Report"}) {
-    DataGridView._generatePDF(widget.data, reportHeaderText, true, columnWidths, widget.defaultColumnWidth, fileName, scale: scale);
+  _generatePDF(
+      {bool isPreview = false,
+      String fileName = "Report.pdf",
+      double scale = 1.0,
+      String reportHeaderText = "Report"}) {
+    DataGridView._generatePDF(widget.data, reportHeaderText, true, columnWidths, widget.defaultColumnWidth, fileName,
+        widget.hiddenDataColumns ?? [],
+        scale: scale);
   }
 
   _generateXls({String fileName = "Report.xlsx", String reportHeaderText = "Report"}) {
@@ -509,7 +525,10 @@ class _DataGridViewState extends State<DataGridView> {
                     child: SizedBox(
                       //Row
                       width: columnWidths.values.toList().sum +
-                          (widget.additonalColumnsLeft ?? []).map((e) => e.columnWidth ?? widget.defaultColumnWidth).toList().sum,
+                          (widget.additonalColumnsLeft ?? [])
+                              .map((e) => e.columnWidth ?? widget.defaultColumnWidth)
+                              .toList()
+                              .sum,
                       child: ScrollConfiguration(
                         behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
                         child: ListView(
@@ -527,12 +546,17 @@ class _DataGridViewState extends State<DataGridView> {
                                         text: e.cellText ?? "",
                                         color: null,
                                         toolTip: e.toolTip,
-                                        cellHeight: (rowHeights[rowIndex] ?? widget.defaultRowHeight) + _extraCellPadding,
+                                        cellHeight:
+                                            (rowHeights[rowIndex] ?? widget.defaultRowHeight) + _extraCellPadding,
                                         cellWidth: e.columnWidth ?? widget.defaultColumnWidth,
                                         onCellPressed: () {
                                           if (e.onCellPressed != null) {
-                                            e.onCellPressed!(rowIndex, cellIndec,
-                                                (e.onClickReturnFieldNames ?? []).map((cellname) => widget.data[rowIndex][cellname]).toList());
+                                            e.onCellPressed!(
+                                                rowIndex,
+                                                cellIndec,
+                                                (e.onClickReturnFieldNames ?? [])
+                                                    .map((cellname) => widget.data[rowIndex][cellname])
+                                                    .toList());
                                           }
                                         },
                                         columnType: e.columnType,
@@ -551,7 +575,8 @@ class _DataGridViewState extends State<DataGridView> {
                                       return DataGridViewCell(
                                         text: widget.data[rowIndex][cellName].toString().trim(),
                                         color: null,
-                                        cellHeight: (rowHeights[rowIndex] ?? widget.defaultRowHeight) + _extraCellPadding,
+                                        cellHeight:
+                                            (rowHeights[rowIndex] ?? widget.defaultRowHeight) + _extraCellPadding,
                                         cellWidth: columnWidths[cellName] ?? widget.defaultColumnWidth,
                                         visible: !(widget.hiddenDataColumns ?? []).contains(cellName),
                                         onCellPressed: () {},

@@ -6,6 +6,7 @@ class DataGridViewColumn {
   DataGridViewColumn({
     required this.headerText,
     this.columnWidth,
+    this.columnName,
     this.dataField,
     this.onCellPressed,
     this.cellText,
@@ -25,4 +26,5 @@ class DataGridViewColumn {
   final ButtonStyle? elevatedButtonStyle;
   final Function(int rowIndex, int cellIndex, List<dynamic>? returnValue)? onCellPressed;
   final ColumnType columnType;
+  final String? columnName;
 }

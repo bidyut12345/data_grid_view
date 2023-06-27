@@ -14,6 +14,7 @@ class DataGridViewCell extends StatelessWidget {
   final double extraCellheight;
   final bool visible;
   final Alignment alignment;
+  final EdgeInsets padding;
 
   const DataGridViewCell({
     Key? key,
@@ -29,6 +30,7 @@ class DataGridViewCell extends StatelessWidget {
     required this.extraCellheight,
     required this.alignment,
     this.visible = true,
+    required this.padding,
   }) : super(key: key);
 
   @override
@@ -49,7 +51,8 @@ class DataGridViewCell extends StatelessWidget {
             child: columnType == ColumnType.textColumn
                 ? TextButton(
                     style: ButtonStyle(
-                      padding: MaterialStateProperty.resolveWith<EdgeInsetsGeometry>((states) => const EdgeInsets.all(2)),
+                      padding:
+                          MaterialStateProperty.resolveWith<EdgeInsetsGeometry>((states) => const EdgeInsets.all(2)),
                     ),
                     onPressed: () {
                       onCellPressed();
@@ -57,7 +60,7 @@ class DataGridViewCell extends StatelessWidget {
                     child: Align(
                       alignment: alignment,
                       child: Padding(
-                        padding: const EdgeInsets.all(0.0),
+                        padding: padding,
                         child: Tooltip(
                           message: toolTip ?? "",
                           child: Text(
@@ -67,7 +70,8 @@ class DataGridViewCell extends StatelessWidget {
                                   fontSize: 14.0,
                                   color: Color.fromARGB(255, 39, 39, 39),
                                 ),
-                            textAlign: ([Alignment.bottomCenter, Alignment.topCenter, Alignment.center].contains(alignment))
+                            textAlign: ([Alignment.bottomCenter, Alignment.topCenter, Alignment.center]
+                                    .contains(alignment))
                                 ? TextAlign.center
                                 : ([Alignment.topLeft, Alignment.bottomLeft, Alignment.centerLeft].contains(alignment))
                                     ? TextAlign.left
@@ -82,7 +86,8 @@ class DataGridViewCell extends StatelessWidget {
                         padding: const EdgeInsets.all(0.0),
                         child: ElevatedButton(
                           style: ButtonStyle(
-                            padding: MaterialStateProperty.resolveWith<EdgeInsetsGeometry>((states) => const EdgeInsets.all(2)),
+                            padding: MaterialStateProperty.resolveWith<EdgeInsetsGeometry>(
+                                (states) => const EdgeInsets.all(2)),
                           ),
                           onPressed: () {
                             onCellPressed();
@@ -90,15 +95,17 @@ class DataGridViewCell extends StatelessWidget {
                           child: Align(
                             alignment: alignment,
                             child: Padding(
-                              padding: const EdgeInsets.all(0.0),
+                              padding: padding,
                               child: Tooltip(
                                 message: toolTip ?? "",
                                 child: Text(
                                   text == "null" ? "" : text,
                                   style: style ?? const TextStyle(fontSize: 16.0, color: Colors.black),
-                                  textAlign: ([Alignment.bottomCenter, Alignment.topCenter, Alignment.center].contains(alignment))
+                                  textAlign: ([Alignment.bottomCenter, Alignment.topCenter, Alignment.center]
+                                          .contains(alignment))
                                       ? TextAlign.center
-                                      : ([Alignment.topLeft, Alignment.bottomLeft, Alignment.centerLeft].contains(alignment))
+                                      : ([Alignment.topLeft, Alignment.bottomLeft, Alignment.centerLeft]
+                                              .contains(alignment))
                                           ? TextAlign.left
                                           : TextAlign.right,
                                 ),

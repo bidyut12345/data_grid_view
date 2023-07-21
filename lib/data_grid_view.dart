@@ -6,6 +6,7 @@ import 'package:data_grid_view/data_grid_view_cell.dart';
 import 'package:data_grid_view/data_grid_view_column.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart' as intl;
 import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 import 'package:collection/collection.dart';
 import 'package:pdf/pdf.dart';
@@ -30,37 +31,40 @@ class DataGridViewController {
 }
 
 class DataGridView extends StatefulWidget {
-  const DataGridView({
-    Key? key,
-    required this.data,
-    this.isFooter = false,
-    this.isRowheader = true,
-    this.defaultColumnWidth = 20,
-    this.defaultRowHeight = 30,
-    this.defaultRowHeaderWidth = 30,
-    this.additonalColumnsLeft,
-    this.autoGenerateColumns = true,
-    this.additonalColumnsRight,
-    this.autoGenerateColumnDetails,
-    this.scrollBarThickness = 40,
-    this.maxColumnWidth = 300,
-    this.showExportExcelButton = false,
-    this.showExportPDFButton = false,
-    this.columnHeaderColor = Colors.black26,
-    this.rowHeaderColor = Colors.black12,
-    this.dataColumnHeadertexts,
-    this.dataColumnWidths,
-    this.hiddenDataColumns,
-    this.controller,
-    this.textColor = Colors.black87,
-    this.headerAlignment = Alignment.center,
-    this.cellAlignment = Alignment.center,
-    this.headerFontSize = 16,
-    this.cellFontSize = 14,
-    this.cellPadding = const EdgeInsets.all(5),
-    this.dataColumnAlignments,
-    this.dataColumnPadding,
-  }) : super(key: key);
+  const DataGridView(
+      {Key? key,
+      required this.data,
+      this.isFooter = false,
+      this.isRowheader = true,
+      this.defaultColumnWidth = 20,
+      this.defaultRowHeight = 30,
+      this.defaultRowHeaderWidth = 30,
+      this.additonalColumnsLeft,
+      this.autoGenerateColumns = true,
+      this.additonalColumnsRight,
+      this.autoGenerateColumnDetails,
+      this.scrollBarThickness = 40,
+      this.maxColumnWidth = 300,
+      this.showExportExcelButton = false,
+      this.showExportPDFButton = false,
+      this.columnHeaderColor = Colors.black26,
+      this.rowHeaderColor = Colors.black12,
+      this.dataColumnHeadertexts,
+      this.dataColumnWidths,
+      this.hiddenDataColumns,
+      this.controller,
+      this.textColor = Colors.black87,
+      this.headerAlignment = Alignment.center,
+      this.cellAlignment = Alignment.center,
+      this.headerFontSize = 16,
+      this.cellFontSize = 14,
+      this.cellPadding = const EdgeInsets.all(5),
+      this.dataColumnAlignments,
+      this.dataColumnPadding,
+      this.allowFilter = false,
+      this.fieldTypes,
+      this.dateFormat = "dd/MM/yyyy"})
+      : super(key: key);
 
   final List<Map<String, dynamic>> data;
   final bool isFooter;
@@ -88,9 +92,12 @@ class DataGridView extends StatefulWidget {
   final Alignment headerAlignment;
   final Alignment cellAlignment;
   final EdgeInsets cellPadding;
+  final Map<String, String>? fieldTypes;
 
   final double headerFontSize;
   final double cellFontSize;
+  final bool allowFilter;
+  final String dateFormat;
 // final bool showS
   @override
   State<DataGridView> createState() => _DataGridViewState();
@@ -130,7 +137,7 @@ class DataGridView extends StatefulWidget {
             child: pw.Padding(padding: const pw.EdgeInsets.all(10), child: pw.Text(header, textScaleFactor: 1.5))),
         build: (pw.Context context) {
           return [
-            pw.Table.fromTextArray(
+            pw.TableHelper.fromTextArray(
                 cellStyle: pw.TextStyle(fontSize: 7 * scale),
                 headerStyle: pw.TextStyle(fontSize: 7 * scale, fontWeight: pw.FontWeight.bold),
                 cellAlignment: pw.Alignment.center,
@@ -181,7 +188,7 @@ class DataGridView extends StatefulWidget {
       double cellFontSize) {
     Map<String, double> columnWidths = {};
     Map<int, double> rowHeights = {};
-
+    if (data.isEmpty) return {};
     data.first.keys.toList().forEach((fieldname) {
       if (!(hiddenDataColumns ?? []).contains(fieldname)) {
         if ((dataColumnWidths ?? {}).containsKey(fieldname)) {
@@ -316,9 +323,11 @@ class _DataGridViewState extends State<DataGridView> {
   late ScrollController _restColumnsController;
   late ScrollController _lastColumnController;
 
+  List<Map<String, dynamic>> filterdata = [];
   @override
   void initState() {
     super.initState();
+    filterdata = widget.data;
     _controllers1 = LinkedScrollControllerGroup();
     _controllers2 = LinkedScrollControllerGroup();
     _headController = _controllers1.addAndGet();
@@ -347,13 +356,13 @@ class _DataGridViewState extends State<DataGridView> {
       String fileName = "Report.pdf",
       double scale = 1.0,
       String reportHeaderText = "Report"}) {
-    DataGridView._generatePDF(widget.data, reportHeaderText, true, columnWidths, widget.defaultColumnWidth, fileName,
+    DataGridView._generatePDF(filterdata, reportHeaderText, true, columnWidths, widget.defaultColumnWidth, fileName,
         widget.hiddenDataColumns ?? [],
         scale: scale);
   }
 
   _generateXls({String fileName = "Report.xlsx", String reportHeaderText = "Report"}) {
-    DataGridView._generateExcel(widget.data, fileName, reportHeaderText);
+    DataGridView._generateExcel(filterdata, fileName, reportHeaderText);
   }
 
   Map<String, double> columnWidths = {};
@@ -483,6 +492,63 @@ class _DataGridViewState extends State<DataGridView> {
                             extraCellheight: _extraCellPadding,
                             alignment: widget.headerAlignment,
                             padding: widget.cellPadding,
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width: 25,
+                                  child: TextButton(
+                                    style: TextButton.styleFrom(
+                                      padding: EdgeInsets.zero,
+                                    ),
+                                    onPressed: () {
+                                      if (sortData.keys.contains(e)) {
+                                        if (sortData[e] == "ASC") {
+                                          sortData[e] = "DESC";
+                                        } else {
+                                          sortData.remove(e);
+                                        }
+                                      } else {
+                                        sortData.addAll({e: "ASC"});
+                                      }
+                                      var keys = List.from(sortData.keys);
+                                      for (var key in keys) {
+                                        if (key != e) sortData.remove(key);
+                                      }
+                                      applySort();
+                                      setState(() {});
+                                    },
+                                    child: Icon(
+                                      sortData.keys.contains(e)
+                                          ? sortData[e] == "ASC"
+                                              ? Icons.arrow_downward
+                                              : Icons.arrow_upward
+                                          : Icons.sort,
+                                      size: 15,
+                                    ),
+                                  ),
+                                ),
+                                Expanded(child: Container()),
+                                SizedBox(
+                                  width: 25,
+                                  child: TextButton(
+                                    style: TextButton.styleFrom(
+                                      padding: EdgeInsets.zero,
+                                    ),
+                                    onPressed: () {
+                                      applyFilter(e);
+                                    },
+                                    child: Icon(
+                                      filterIinfo.keys.contains(e)
+                                          ? filterIinfo[e]!.values.where((element) => element == false).isNotEmpty
+                                              ? Icons.filter_alt
+                                              : Icons.filter_alt_off
+                                          : Icons.filter_alt_off,
+                                      size: 15,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           );
                         },
                       ).toList() +
@@ -525,7 +591,7 @@ class _DataGridViewState extends State<DataGridView> {
                         child: ListView(
                           controller: _firstColumnController,
                           physics: const ClampingScrollPhysics(),
-                          children: List.generate(widget.data.length, (index) {
+                          children: List.generate(filterdata.length, (index) {
                             return DataGridViewCell(
                               color: widget.rowHeaderColor,
                               text: (index + 1).toString(),
@@ -574,7 +640,7 @@ class _DataGridViewState extends State<DataGridView> {
                           physics: const ClampingScrollPhysics(),
                           children: Function.apply(() {
                             List<Widget> ll = [];
-                            ll.addAll(List.generate(widget.data.length, (rowIndex) {
+                            ll.addAll(List.generate(filterdata.length, (rowIndex) {
                               int cellIndec = -1;
                               return Row(
                                 children:
@@ -594,7 +660,7 @@ class _DataGridViewState extends State<DataGridView> {
                                                     rowIndex,
                                                     cellIndec,
                                                     (e.onClickReturnFieldNames ?? [])
-                                                        .map((cellname) => widget.data[rowIndex][cellname])
+                                                        .map((cellname) => filterdata[rowIndex][cellname])
                                                         .toList());
                                               }
                                             },
@@ -611,11 +677,11 @@ class _DataGridViewState extends State<DataGridView> {
                                           );
                                         }).toList() +
                                         //Main Cells
-                                        List.generate(widget.data.first.keys.length, (cellIndex) {
+                                        List.generate(filterdata.first.keys.length, (cellIndex) {
                                           cellIndec++;
-                                          String cellName = widget.data.first.keys.toList()[cellIndex].toString();
+                                          String cellName = filterdata.first.keys.toList()[cellIndex].toString();
                                           return DataGridViewCell(
-                                            text: widget.data[rowIndex][cellName].toString().trim(),
+                                            text: filterdata[rowIndex][cellName].toString().trim(),
                                             color: null,
                                             cellHeight:
                                                 (rowHeights[rowIndex] ?? widget.defaultRowHeight) + _extraCellPadding,
@@ -647,7 +713,7 @@ class _DataGridViewState extends State<DataGridView> {
                                                     rowIndex,
                                                     cellIndec,
                                                     (e.onClickReturnFieldNames ?? [])
-                                                        .map((cellname) => widget.data[rowIndex][cellname])
+                                                        .map((cellname) => filterdata[rowIndex][cellname])
                                                         .toList());
                                               }
                                             },
@@ -690,7 +756,7 @@ class _DataGridViewState extends State<DataGridView> {
                     child: ListView(
                       controller: _lastColumnController,
                       physics: const ClampingScrollPhysics(),
-                      children: List.generate(widget.data.length, (rowIndex) {
+                      children: List.generate(filterdata.length, (rowIndex) {
                             return SizedBox(
                               height: (rowHeights[rowIndex] ?? widget.defaultRowHeight) + (_extraCellPadding * 2),
                             );
@@ -714,7 +780,7 @@ class _DataGridViewState extends State<DataGridView> {
           //   defaultRowHeaderWidth: widget.defaultRowHeaderWidth,
           //   autoGenerateColumns: widget.autoGenerateColumns,
           //   columns: widget.columns,
-          //   data: widget.data,
+          //   data: filterdata,
           //   isRowHeader: widget.isRowheader,
           // ),
         ),
@@ -723,5 +789,127 @@ class _DataGridViewState extends State<DataGridView> {
         // ),
       ],
     );
+  }
+
+  Map<String, Map<String, bool>> filterIinfo = {};
+  Map<String, String> sortData = {};
+
+  applyFilter(String columnName) {
+    List<String> discintValues = widget.data.map((e) => e[columnName].toString()).toList();
+    var seen = <String>{};
+    discintValues = discintValues.where((country) => seen.add(country)).toList();
+
+    // Map<String, bool> selectedValues =
+    //     filterIinfo[columnName] ?? {for (var v in discintValues) (v.isEmpty ? " " : v): true};
+    Map<String, bool> selectedValues = filterIinfo[columnName] ?? {};
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            title: Column(
+              children: [
+                Text(columnName),
+                const Divider(),
+              ],
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                children: discintValues
+                    .map((e) => Row(
+                          children: [
+                            Checkbox(
+                                value: selectedValues[e] ?? true,
+                                onChanged: (value) {
+                                  if (value ?? true) {
+                                    selectedValues.remove(e);
+                                  } else {
+                                    selectedValues.addAll({e: false});
+                                  }
+                                  // selectedValues[e] = value ?? true;
+                                  setState(() {});
+                                }),
+                            Text(e),
+                          ],
+                        ))
+                    .toList(),
+              ),
+            ),
+            actions: [
+              ElevatedButton(
+                  onPressed: () {
+                    discintValues.forEach((key) {
+                      selectedValues = {};
+                      setState(() {});
+                    });
+                  },
+                  child: const Text("Select All")),
+              ElevatedButton(
+                  onPressed: () {
+                    discintValues.forEach((key) {
+                      selectedValues.addAll({key: false});
+                      setState(() {});
+                    });
+                  },
+                  child: const Text("Select None")),
+              ElevatedButton(
+                  onPressed: () {
+                    filterIinfo[columnName] == null
+                        ? filterIinfo.addAll({columnName: selectedValues})
+                        : filterIinfo[columnName] = selectedValues;
+                    Navigator.pop(context, "APPLY");
+                  },
+                  child: const Text("Apply Filter")),
+            ],
+          );
+        });
+      },
+    ).then((value) {
+      if (value == "APPLY") {
+        getFiltereData();
+        setState(() {});
+      }
+    });
+  }
+
+  getFiltereData() {
+    filterdata = List<Map<String, dynamic>>.from(widget.data);
+    for (String colname in filterIinfo.keys) {
+      List<dynamic> unwantedValue =
+          filterIinfo[colname]?.keys.where((element) => filterIinfo[colname]![element] == false).toList() ?? [];
+      filterdata = filterdata.where((element) => !unwantedValue.contains(element[colname])).toList();
+    }
+  }
+
+  applySort() {
+    getFiltereData();
+    if (sortData.isEmpty) return;
+    String colName = sortData.keys.first;
+    String type = sortData.values.first;
+    filterdata.sort((m1, m2) {
+      if ((widget.fieldTypes?.containsKey(colName) ?? false) && widget.fieldTypes![colName] == "NUMBER") {
+        if (type == "ASC") {
+          return double.parse(m1[colName].toString()).compareTo(double.parse(m2[colName].toString()));
+        } else {
+          return double.parse(m2[colName].toString()).compareTo(double.parse(m1[colName].toString()));
+        }
+      } else if ((widget.fieldTypes?.containsKey(colName) ?? false) && widget.fieldTypes![colName] == "DATE") {
+        if (type == "ASC") {
+          return intl.DateFormat(widget.dateFormat)
+              .parse(m1[colName].toString())
+              .compareTo(intl.DateFormat(widget.dateFormat).parse(m2[colName].toString()));
+        } else {
+          return intl.DateFormat(widget.dateFormat)
+              .parse(m2[colName].toString())
+              .compareTo(intl.DateFormat(widget.dateFormat).parse(m1[colName].toString()));
+        }
+      } else {
+        if (type == "ASC") {
+          return m1[colName].toString().toUpperCase().compareTo(m2[colName].toString().toUpperCase());
+        } else {
+          return m2[colName].toString().toUpperCase().compareTo(m1[colName].toString().toUpperCase());
+        }
+      }
+    });
   }
 }

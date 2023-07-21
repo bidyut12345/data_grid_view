@@ -15,6 +15,7 @@ class DataGridViewCell extends StatelessWidget {
   final bool visible;
   final Alignment alignment;
   final EdgeInsets padding;
+  final Widget? child;
 
   const DataGridViewCell({
     Key? key,
@@ -31,6 +32,7 @@ class DataGridViewCell extends StatelessWidget {
     required this.alignment,
     this.visible = true,
     required this.padding,
+    this.child,
   }) : super(key: key);
 
   @override
@@ -48,84 +50,90 @@ class DataGridViewCell extends StatelessWidget {
               ),
             ),
             alignment: alignment,
-            child: columnType == ColumnType.textColumn
-                ? TextButton(
-                    style: ButtonStyle(
-                      padding:
-                          MaterialStateProperty.resolveWith<EdgeInsetsGeometry>((states) => const EdgeInsets.all(2)),
-                    ),
-                    onPressed: () {
-                      onCellPressed();
-                    },
-                    child: Align(
-                      alignment: alignment,
-                      child: Padding(
-                        padding: padding,
-                        child: Tooltip(
-                          message: toolTip ?? "",
-                          child: Text(
-                            text == "null" ? "" : text,
-                            style: style ??
-                                const TextStyle(
-                                  fontSize: 14.0,
-                                  color: Color.fromARGB(255, 39, 39, 39),
-                                ),
-                            textAlign: ([Alignment.bottomCenter, Alignment.topCenter, Alignment.center]
-                                    .contains(alignment))
-                                ? TextAlign.center
-                                : ([Alignment.topLeft, Alignment.bottomLeft, Alignment.centerLeft].contains(alignment))
-                                    ? TextAlign.left
-                                    : TextAlign.right,
-                          ),
+            child: Stack(
+              children: [
+                columnType == ColumnType.textColumn
+                    ? TextButton(
+                        style: ButtonStyle(
+                          padding: MaterialStateProperty.resolveWith<EdgeInsetsGeometry>(
+                              (states) => const EdgeInsets.all(2)),
                         ),
-                      ),
-                    ),
-                  )
-                : columnType == ColumnType.elevatedButtonColumn
-                    ? Padding(
-                        padding: const EdgeInsets.all(0.0),
-                        child: ElevatedButton(
-                          style: ButtonStyle(
-                            padding: MaterialStateProperty.resolveWith<EdgeInsetsGeometry>(
-                                (states) => const EdgeInsets.all(2)),
-                          ),
-                          onPressed: () {
-                            onCellPressed();
-                          },
-                          child: Align(
-                            alignment: alignment,
-                            child: Padding(
-                              padding: padding,
-                              child: Tooltip(
-                                message: toolTip ?? "",
-                                child: Text(
-                                  text == "null" ? "" : text,
-                                  style: style ?? const TextStyle(fontSize: 16.0, color: Colors.black),
-                                  textAlign: ([Alignment.bottomCenter, Alignment.topCenter, Alignment.center]
-                                          .contains(alignment))
-                                      ? TextAlign.center
-                                      : ([Alignment.topLeft, Alignment.bottomLeft, Alignment.centerLeft]
-                                              .contains(alignment))
-                                          ? TextAlign.left
-                                          : TextAlign.right,
-                                ),
+                        onPressed: () {
+                          onCellPressed();
+                        },
+                        child: Align(
+                          alignment: alignment,
+                          child: Padding(
+                            padding: padding,
+                            child: Tooltip(
+                              message: toolTip ?? "",
+                              child: Text(
+                                text == "null" ? "" : text,
+                                style: style ??
+                                    const TextStyle(
+                                      fontSize: 14.0,
+                                      color: Color.fromARGB(255, 39, 39, 39),
+                                    ),
+                                textAlign: ([Alignment.bottomCenter, Alignment.topCenter, Alignment.center]
+                                        .contains(alignment))
+                                    ? TextAlign.center
+                                    : ([Alignment.topLeft, Alignment.bottomLeft, Alignment.centerLeft]
+                                            .contains(alignment))
+                                        ? TextAlign.left
+                                        : TextAlign.right,
                               ),
                             ),
                           ),
-                        ))
-                    : Tooltip(
-                        message: toolTip ?? "",
-                        child: IconButton(
-                          icon: Icon(
-                            iconData ?? Icons.error,
-                            size: 18,
-                          ),
-                          padding: const EdgeInsets.all(2),
-                          onPressed: () {
-                            onCellPressed();
-                          },
                         ),
-                      ),
+                      )
+                    : columnType == ColumnType.elevatedButtonColumn
+                        ? Padding(
+                            padding: const EdgeInsets.all(0.0),
+                            child: ElevatedButton(
+                              style: ButtonStyle(
+                                padding: MaterialStateProperty.resolveWith<EdgeInsetsGeometry>(
+                                    (states) => const EdgeInsets.all(2)),
+                              ),
+                              onPressed: () {
+                                onCellPressed();
+                              },
+                              child: Align(
+                                alignment: alignment,
+                                child: Padding(
+                                  padding: padding,
+                                  child: Tooltip(
+                                    message: toolTip ?? "",
+                                    child: Text(
+                                      text == "null" ? "" : text,
+                                      style: style ?? const TextStyle(fontSize: 16.0, color: Colors.black),
+                                      textAlign: ([Alignment.bottomCenter, Alignment.topCenter, Alignment.center]
+                                              .contains(alignment))
+                                          ? TextAlign.center
+                                          : ([Alignment.topLeft, Alignment.bottomLeft, Alignment.centerLeft]
+                                                  .contains(alignment))
+                                              ? TextAlign.left
+                                              : TextAlign.right,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ))
+                        : Tooltip(
+                            message: toolTip ?? "",
+                            child: IconButton(
+                              icon: Icon(
+                                iconData ?? Icons.error,
+                                size: 18,
+                              ),
+                              padding: const EdgeInsets.all(2),
+                              onPressed: () {
+                                onCellPressed();
+                              },
+                            ),
+                          ),
+                if (child != null) Align(alignment: Alignment.centerRight, child: child!),
+              ],
+            ),
           );
   }
 }

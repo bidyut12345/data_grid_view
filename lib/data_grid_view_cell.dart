@@ -16,6 +16,7 @@ class DataGridViewCell extends StatelessWidget {
   final Alignment alignment;
   final EdgeInsets padding;
   final Widget? child;
+  final Widget? trailing;
 
   const DataGridViewCell({
     Key? key,
@@ -33,6 +34,7 @@ class DataGridViewCell extends StatelessWidget {
     this.visible = true,
     required this.padding,
     this.child,
+    this.trailing,
   }) : super(key: key);
 
   @override
@@ -52,44 +54,11 @@ class DataGridViewCell extends StatelessWidget {
             alignment: alignment,
             child: Stack(
               children: [
-                columnType == ColumnType.textColumn
-                    ? TextButton(
-                        style: ButtonStyle(
-                          padding: MaterialStateProperty.resolveWith<EdgeInsetsGeometry>(
-                              (states) => const EdgeInsets.all(2)),
-                        ),
-                        onPressed: () {
-                          onCellPressed();
-                        },
-                        child: Align(
-                          alignment: alignment,
-                          child: Padding(
-                            padding: padding,
-                            child: Tooltip(
-                              message: toolTip ?? "",
-                              child: Text(
-                                text == "null" ? "" : text,
-                                style: style ??
-                                    const TextStyle(
-                                      fontSize: 14.0,
-                                      color: Color.fromARGB(255, 39, 39, 39),
-                                    ),
-                                textAlign: ([Alignment.bottomCenter, Alignment.topCenter, Alignment.center]
-                                        .contains(alignment))
-                                    ? TextAlign.center
-                                    : ([Alignment.topLeft, Alignment.bottomLeft, Alignment.centerLeft]
-                                            .contains(alignment))
-                                        ? TextAlign.left
-                                        : TextAlign.right,
-                              ),
-                            ),
-                          ),
-                        ),
-                      )
-                    : columnType == ColumnType.elevatedButtonColumn
-                        ? Padding(
-                            padding: const EdgeInsets.all(0.0),
-                            child: ElevatedButton(
+                Row(
+                  children: [
+                    Expanded(
+                      child: columnType == ColumnType.textColumn
+                          ? TextButton(
                               style: ButtonStyle(
                                 padding: MaterialStateProperty.resolveWith<EdgeInsetsGeometry>(
                                     (states) => const EdgeInsets.all(2)),
@@ -105,7 +74,11 @@ class DataGridViewCell extends StatelessWidget {
                                     message: toolTip ?? "",
                                     child: Text(
                                       text == "null" ? "" : text,
-                                      style: style ?? const TextStyle(fontSize: 16.0, color: Colors.black),
+                                      style: style ??
+                                          const TextStyle(
+                                            fontSize: 14.0,
+                                            color: Color.fromARGB(255, 39, 39, 39),
+                                          ),
                                       textAlign: ([Alignment.bottomCenter, Alignment.topCenter, Alignment.center]
                                               .contains(alignment))
                                           ? TextAlign.center
@@ -117,20 +90,56 @@ class DataGridViewCell extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                            ))
-                        : Tooltip(
-                            message: toolTip ?? "",
-                            child: IconButton(
-                              icon: Icon(
-                                iconData ?? Icons.error,
-                                size: 18,
-                              ),
-                              padding: const EdgeInsets.all(2),
-                              onPressed: () {
-                                onCellPressed();
-                              },
-                            ),
-                          ),
+                            )
+                          : columnType == ColumnType.elevatedButtonColumn
+                              ? Padding(
+                                  padding: const EdgeInsets.all(0.0),
+                                  child: ElevatedButton(
+                                    style: ButtonStyle(
+                                      padding: MaterialStateProperty.resolveWith<EdgeInsetsGeometry>(
+                                          (states) => const EdgeInsets.all(2)),
+                                    ),
+                                    onPressed: () {
+                                      onCellPressed();
+                                    },
+                                    child: Align(
+                                      alignment: alignment,
+                                      child: Padding(
+                                        padding: padding,
+                                        child: Tooltip(
+                                          message: toolTip ?? "",
+                                          child: Text(
+                                            text == "null" ? "" : text,
+                                            style: style ?? const TextStyle(fontSize: 16.0, color: Colors.black),
+                                            textAlign: ([Alignment.bottomCenter, Alignment.topCenter, Alignment.center]
+                                                    .contains(alignment))
+                                                ? TextAlign.center
+                                                : ([Alignment.topLeft, Alignment.bottomLeft, Alignment.centerLeft]
+                                                        .contains(alignment))
+                                                    ? TextAlign.left
+                                                    : TextAlign.right,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ))
+                              : Tooltip(
+                                  message: toolTip ?? "",
+                                  child: IconButton(
+                                    icon: Icon(
+                                      iconData ?? Icons.error,
+                                      size: 18,
+                                    ),
+                                    padding: const EdgeInsets.all(2),
+                                    onPressed: () {
+                                      onCellPressed();
+                                    },
+                                  ),
+                                ),
+                    ),
+                    if (trailing != null) trailing!,
+                  ],
+                ),
                 if (child != null) Align(alignment: Alignment.centerRight, child: child!),
               ],
             ),

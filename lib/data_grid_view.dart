@@ -342,13 +342,14 @@ class _DataGridViewState extends State<DataGridView> {
           ({String fileName = "Report.pdf", double scale = 1.0, String reportHeaderText = "Report"}) {
         _generatePDF(fileName: fileName, scale: scale, reportHeaderText: reportHeaderText);
       };
-      widget.controller?.generateXls = ({String fileName = "Report.slsx", String reportHeaderText = "Report"}) {
+      widget.controller?.generateXls = ({String fileName = "Report.xlsx", String reportHeaderText = "Report"}) {
         _generateXls(fileName: fileName, reportHeaderText: reportHeaderText);
       };
       widget.controller?.printPreview = () {
         _generatePDF();
       };
     }
+    // debugPrint("DataGridView initstate");
   }
 
   _generatePDF(
@@ -381,6 +382,7 @@ class _DataGridViewState extends State<DataGridView> {
 
   @override
   Widget build(BuildContext context) {
+    // debugPrint("DataGridView Build");
     bool isScrollVisible = (kIsWeb ? true : Platform.isLinux || Platform.isMacOS || Platform.isWindows);
     double scrollBarThickness = isScrollVisible ? widget.scrollBarThickness : 5;
     var data = DataGridView._generateColumnWidthAndRowHeight(
@@ -397,6 +399,7 @@ class _DataGridViewState extends State<DataGridView> {
     );
     columnWidths = data[0];
     rowHeights = data[1];
+    getFiltereData();
     return Column(
       children: [
         Row(
@@ -480,7 +483,7 @@ class _DataGridViewState extends State<DataGridView> {
                           return DataGridViewCell(
                             color: widget.columnHeaderColor,
                             text: e,
-                            cellWidth: columnWidths[e] ?? widget.defaultColumnWidth,
+                            cellWidth: (columnWidths[e] ?? widget.defaultColumnWidth) + 25,
                             visible: !(widget.hiddenDataColumns ?? []).contains(e),
                             cellHeight: widget.defaultRowHeight,
                             style: TextStyle(
@@ -492,63 +495,194 @@ class _DataGridViewState extends State<DataGridView> {
                             extraCellheight: _extraCellPadding,
                             alignment: widget.headerAlignment,
                             padding: widget.cellPadding,
-                            child: Row(
-                              children: [
-                                SizedBox(
-                                  width: 25,
-                                  child: TextButton(
+                            trailing:
+                                // Row(z
+                                //   children: [
+                                // SizedBox(
+                                //   width: 25,
+                                //   child: TextButton(
+                                //     style: TextButton.styleFrom(
+                                //       padding: EdgeInsets.zero,
+                                //       backgroundColor: Colors.white.withOpacity(0.1),
+                                //     ),
+                                //     onPressed: () {
+                                //       if (sortData.keys.contains(e)) {
+                                //         if (sortData[e] == "ASC") {
+                                //           sortData[e] = "DESC";
+                                //         } else {
+                                //           sortData.remove(e);
+                                //         }
+                                //       } else {
+                                //         sortData.addAll({e: "ASC"});
+                                //       }
+                                //       var keys = List.from(sortData.keys);
+                                //       for (var key in keys) {
+                                //         if (key != e) sortData.remove(key);
+                                //       }
+                                //       applySort();
+                                //       setState(() {});
+                                //     },
+                                //     child: Icon(
+                                //       sortData.keys.contains(e)
+                                //           ? sortData[e] == "ASC"
+                                //               ? Icons.arrow_downward
+                                //               : Icons.arrow_upward
+                                //           : Icons.sort,
+                                //       size: 15,
+                                //     ),
+                                //   ),
+                                // ),
+                                // Expanded(child: Container()),
+                                // SizedBox(
+                                //   width: 25,
+                                //   child: TextButton(
+                                //     style: TextButton.styleFrom(
+                                //       padding: EdgeInsets.zero,
+                                //       backgroundColor: Colors.white.withOpacity(0.1),
+                                //     ),
+                                //     onPressed: () {
+                                //       applyFilter(e);
+                                //     },
+                                //     child: Icon(
+                                //       filterIinfo.keys.contains(e)
+                                //           ? filterIinfo[e]!.values.where((element) => element == false).isNotEmpty
+                                //               ? Icons.filter_alt
+                                //               : Icons.filter_alt_off
+                                //           : Icons.filter_alt_off,
+                                //       size: 15,
+                                //     ),
+                                //   ),
+                                // ),
+                                Padding(
+                              padding: EdgeInsets.only(right: 2),
+                              child: SizedBox(
+                                width: 20,
+                                child: Builder(
+                                  builder: (context1) => TextButton(
                                     style: TextButton.styleFrom(
                                       padding: EdgeInsets.zero,
+                                      backgroundColor: Colors.white.withOpacity(0.1),
                                     ),
                                     onPressed: () {
-                                      if (sortData.keys.contains(e)) {
-                                        if (sortData[e] == "ASC") {
-                                          sortData[e] = "DESC";
-                                        } else {
-                                          sortData.remove(e);
+                                      Offset position =
+                                          (context1.findRenderObject() as RenderBox).localToGlobal(Offset.zero);
+                                      showMenu(
+                                        context: context1,
+                                        position: RelativeRect.fromLTRB(position.dx, position.dy + 30, 100000, 0),
+                                        items: [
+                                          PopupMenuItem(
+                                            value: 1,
+                                            child: Row(
+                                              children: [
+                                                Icon(Icons.arrow_downward),
+                                                const SizedBox(width: 5),
+                                                Text("Sort Ascending"),
+                                              ],
+                                            ),
+                                          ),
+                                          PopupMenuItem(
+                                            value: 2,
+                                            child: Row(
+                                              children: [
+                                                Icon(Icons.arrow_upward),
+                                                const SizedBox(width: 5),
+                                                Text("Sort Descending"),
+                                              ],
+                                            ),
+                                          ),
+                                          PopupMenuItem(
+                                            value: 3,
+                                            child: Row(
+                                              children: [
+                                                Icon(Icons.sort_by_alpha_outlined),
+                                                const SizedBox(width: 5),
+                                                Text("Reset Sort"),
+                                              ],
+                                            ),
+                                          ),
+                                          PopupMenuItem(
+                                            value: 4,
+                                            child: Row(
+                                              children: [
+                                                Icon(Icons.filter_alt),
+                                                const SizedBox(width: 5),
+                                                Text("Filter"),
+                                              ],
+                                            ),
+                                          ),
+                                          // PopupMenuItem(
+                                          //   value: 5,
+                                          //   child: Row(
+                                          //     children: [
+                                          //       Icon(Icons.filter_alt_off),
+                                          //       const SizedBox(width: 5),
+                                          //       Text("Reset Filter"),
+                                          //     ],
+                                          //   ),
+                                          // ),
+                                        ],
+                                        elevation: 8.0,
+                                      ).then((value) {
+                                        switch (value) {
+                                          case 1:
+                                            // if (sortData.keys.contains(e)) {
+                                            //   if (sortData[e] == "ASC") {
+                                            //     sortData[e] = "DESC";
+                                            //   } else {
+                                            //     sortData.remove(e);
+                                            //   }
+                                            // } else {
+                                            //   sortData.addAll({e: "ASC"});
+                                            // }
+                                            sortData.remove(e);
+                                            sortData.addAll({e: "ASC"});
+                                            var keys = List.from(sortData.keys);
+                                            for (var key in keys) {
+                                              if (key != e) sortData.remove(key);
+                                            }
+                                            applySort();
+                                            // setState(() {});
+                                            // print(value);
+                                            break;
+                                          case 2:
+                                            sortData.remove(e);
+                                            sortData.addAll({e: "DESC"});
+                                            var keys = List.from(sortData.keys);
+                                            for (var key in keys) {
+                                              if (key != e) sortData.remove(key);
+                                            }
+                                            applySort();
+                                            // setState(() {});
+                                            break;
+                                          case 3:
+                                            sortData.remove(e);
+                                            // sortData.addAll({e: "ASC"});
+                                            var keys = List.from(sortData.keys);
+                                            for (var key in keys) {
+                                              if (key != e) sortData.remove(key);
+                                            }
+                                            applySort();
+                                            // setState(() {});
+                                            break;
+                                          case 4:
+                                            applyFilter(e);
+                                            break;
+                                          // case 5:
+                                          //   break;
                                         }
-                                      } else {
-                                        sortData.addAll({e: "ASC"});
-                                      }
-                                      var keys = List.from(sortData.keys);
-                                      for (var key in keys) {
-                                        if (key != e) sortData.remove(key);
-                                      }
-                                      applySort();
-                                      setState(() {});
+                                      });
+                                      //
                                     },
                                     child: Icon(
-                                      sortData.keys.contains(e)
-                                          ? sortData[e] == "ASC"
-                                              ? Icons.arrow_downward
-                                              : Icons.arrow_upward
-                                          : Icons.sort,
+                                      Icons.more_vert,
                                       size: 15,
                                     ),
                                   ),
                                 ),
-                                Expanded(child: Container()),
-                                SizedBox(
-                                  width: 25,
-                                  child: TextButton(
-                                    style: TextButton.styleFrom(
-                                      padding: EdgeInsets.zero,
-                                    ),
-                                    onPressed: () {
-                                      applyFilter(e);
-                                    },
-                                    child: Icon(
-                                      filterIinfo.keys.contains(e)
-                                          ? filterIinfo[e]!.values.where((element) => element == false).isNotEmpty
-                                              ? Icons.filter_alt
-                                              : Icons.filter_alt_off
-                                          : Icons.filter_alt_off,
-                                      size: 15,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
+                            //   ],
+                            // ),
                           );
                         },
                       ).toList() +
@@ -624,6 +758,7 @@ class _DataGridViewState extends State<DataGridView> {
                     child: SizedBox(
                       //Row
                       width: columnWidths.values.toList().sum +
+                          (columnWidths.values.toList().length * 25) +
                           (widget.additonalColumnsLeft ?? [])
                               .map((e) => e.columnWidth ?? widget.defaultColumnWidth)
                               .toList()
@@ -685,7 +820,7 @@ class _DataGridViewState extends State<DataGridView> {
                                             color: null,
                                             cellHeight:
                                                 (rowHeights[rowIndex] ?? widget.defaultRowHeight) + _extraCellPadding,
-                                            cellWidth: columnWidths[cellName] ?? widget.defaultColumnWidth,
+                                            cellWidth: (columnWidths[cellName] ?? widget.defaultColumnWidth) + 25,
                                             visible: !(widget.hiddenDataColumns ?? []).contains(cellName),
                                             onCellPressed: () {},
                                             extraCellheight: _extraCellPadding,
@@ -886,30 +1021,33 @@ class _DataGridViewState extends State<DataGridView> {
     if (sortData.isEmpty) return;
     String colName = sortData.keys.first;
     String type = sortData.values.first;
-    filterdata.sort((m1, m2) {
-      if ((widget.fieldTypes?.containsKey(colName) ?? false) && widget.fieldTypes![colName] == "NUMBER") {
-        if (type == "ASC") {
-          return double.parse(m1[colName].toString()).compareTo(double.parse(m2[colName].toString()));
+    if (["ASC", "DESC"].contains(type)) {
+      filterdata.sort((m1, m2) {
+        if ((widget.fieldTypes?.containsKey(colName) ?? false) && widget.fieldTypes![colName] == "NUMBER") {
+          if (type == "ASC") {
+            return double.parse(m1[colName].toString()).compareTo(double.parse(m2[colName].toString()));
+          } else {
+            return double.parse(m2[colName].toString()).compareTo(double.parse(m1[colName].toString()));
+          }
+        } else if ((widget.fieldTypes?.containsKey(colName) ?? false) && widget.fieldTypes![colName] == "DATE") {
+          if (type == "ASC") {
+            return intl.DateFormat(widget.dateFormat)
+                .parse(m1[colName].toString())
+                .compareTo(intl.DateFormat(widget.dateFormat).parse(m2[colName].toString()));
+          } else {
+            return intl.DateFormat(widget.dateFormat)
+                .parse(m2[colName].toString())
+                .compareTo(intl.DateFormat(widget.dateFormat).parse(m1[colName].toString()));
+          }
         } else {
-          return double.parse(m2[colName].toString()).compareTo(double.parse(m1[colName].toString()));
+          if (type == "ASC") {
+            return m1[colName].toString().toUpperCase().compareTo(m2[colName].toString().toUpperCase());
+          } else {
+            return m2[colName].toString().toUpperCase().compareTo(m1[colName].toString().toUpperCase());
+          }
         }
-      } else if ((widget.fieldTypes?.containsKey(colName) ?? false) && widget.fieldTypes![colName] == "DATE") {
-        if (type == "ASC") {
-          return intl.DateFormat(widget.dateFormat)
-              .parse(m1[colName].toString())
-              .compareTo(intl.DateFormat(widget.dateFormat).parse(m2[colName].toString()));
-        } else {
-          return intl.DateFormat(widget.dateFormat)
-              .parse(m2[colName].toString())
-              .compareTo(intl.DateFormat(widget.dateFormat).parse(m1[colName].toString()));
-        }
-      } else {
-        if (type == "ASC") {
-          return m1[colName].toString().toUpperCase().compareTo(m2[colName].toString().toUpperCase());
-        } else {
-          return m2[colName].toString().toUpperCase().compareTo(m1[colName].toString().toUpperCase());
-        }
-      }
-    });
+      });
+    }
+    setState(() {});
   }
 }

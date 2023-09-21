@@ -22,6 +22,7 @@ double _extraCellPadding = 2.0;
 class DataGridViewController {
   Function({String fileName, double scale, String reportHeaderText})? generatePdf;
   Function({String fileName, String reportHeaderText})? generateXls;
+  Function? resetFilterAndSort;
   Function? printPreview;
   void dispose() {
     generatePdf = null;
@@ -338,6 +339,10 @@ class _DataGridViewState extends State<DataGridView> {
     _lastColumnController = _controllers2.addAndGet();
 
     if (widget.controller != null) {
+      widget.controller?.resetFilterAndSort = () {
+        sortData = {};
+        filterIinfo = {};
+      };
       widget.controller?.generatePdf =
           ({String fileName = "Report.pdf", double scale = 1.0, String reportHeaderText = "Report"}) {
         _generatePDF(fileName: fileName, scale: scale, reportHeaderText: reportHeaderText);
@@ -382,7 +387,7 @@ class _DataGridViewState extends State<DataGridView> {
 
   @override
   Widget build(BuildContext context) {
-    // debugPrint("DataGridView Build");
+    debugPrint("DataGridView Build");
     bool isScrollVisible = (kIsWeb ? true : Platform.isLinux || Platform.isMacOS || Platform.isWindows);
     double scrollBarThickness = isScrollVisible ? widget.scrollBarThickness : 5;
     var data = DataGridView._generateColumnWidthAndRowHeight(
@@ -400,6 +405,7 @@ class _DataGridViewState extends State<DataGridView> {
     columnWidths = data[0];
     rowHeights = data[1];
     getFiltereData();
+    applySort();
     return Column(
       children: [
         Row(
@@ -498,7 +504,7 @@ class _DataGridViewState extends State<DataGridView> {
                             trailing:
                                 // Row(z
                                 //   children: [
-                                // SizedBox(
+                                //     SizedBox(
                                 //   width: 25,
                                 //   child: TextButton(
                                 //     style: TextButton.styleFrom(
@@ -574,6 +580,10 @@ class _DataGridViewState extends State<DataGridView> {
                                             value: 1,
                                             child: Row(
                                               children: [
+                                                sortData[e] == "ASC"
+                                                    ? Icon(Icons.check_outlined)
+                                                    : const SizedBox(width: 25),
+                                                const SizedBox(width: 5),
                                                 Icon(Icons.arrow_downward),
                                                 const SizedBox(width: 5),
                                                 Text("Sort Ascending"),
@@ -584,26 +594,35 @@ class _DataGridViewState extends State<DataGridView> {
                                             value: 2,
                                             child: Row(
                                               children: [
+                                                sortData[e] == "DESC"
+                                                    ? Icon(Icons.check_outlined)
+                                                    : const SizedBox(width: 25),
+                                                const SizedBox(width: 5),
                                                 Icon(Icons.arrow_upward),
                                                 const SizedBox(width: 5),
                                                 Text("Sort Descending"),
                                               ],
                                             ),
                                           ),
-                                          PopupMenuItem(
-                                            value: 3,
-                                            child: Row(
-                                              children: [
-                                                Icon(Icons.sort_by_alpha_outlined),
-                                                const SizedBox(width: 5),
-                                                Text("Reset Sort"),
-                                              ],
+                                          if (sortData.containsKey(e))
+                                            PopupMenuItem(
+                                              value: 3,
+                                              child: Row(
+                                                children: [
+                                                  const SizedBox(width: 25),
+                                                  const SizedBox(width: 5),
+                                                  Icon(Icons.sort_by_alpha_outlined),
+                                                  const SizedBox(width: 5),
+                                                  Text("Reset Sort"),
+                                                ],
+                                              ),
                                             ),
-                                          ),
                                           PopupMenuItem(
                                             value: 4,
                                             child: Row(
                                               children: [
+                                                const SizedBox(width: 25),
+                                                const SizedBox(width: 5),
                                                 Icon(Icons.filter_alt),
                                                 const SizedBox(width: 5),
                                                 Text("Filter"),
@@ -640,8 +659,8 @@ class _DataGridViewState extends State<DataGridView> {
                                             for (var key in keys) {
                                               if (key != e) sortData.remove(key);
                                             }
-                                            applySort();
-                                            // setState(() {});
+                                            // applySort();
+                                            setState(() {});
                                             // print(value);
                                             break;
                                           case 2:
@@ -651,8 +670,8 @@ class _DataGridViewState extends State<DataGridView> {
                                             for (var key in keys) {
                                               if (key != e) sortData.remove(key);
                                             }
-                                            applySort();
-                                            // setState(() {});
+                                            // applySort();
+                                            setState(() {});
                                             break;
                                           case 3:
                                             sortData.remove(e);
@@ -661,8 +680,8 @@ class _DataGridViewState extends State<DataGridView> {
                                             for (var key in keys) {
                                               if (key != e) sortData.remove(key);
                                             }
-                                            applySort();
-                                            // setState(() {});
+                                            // applySort();
+                                            setState(() {});
                                             break;
                                           case 4:
                                             applyFilter(e);
@@ -1048,6 +1067,6 @@ class _DataGridViewState extends State<DataGridView> {
         }
       });
     }
-    setState(() {});
+    // setState(() {});
   }
 }

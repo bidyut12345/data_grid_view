@@ -32,40 +32,42 @@ class DataGridViewController {
 }
 
 class DataGridView extends StatefulWidget {
-  const DataGridView(
-      {Key? key,
-      required this.data,
-      this.isFooter = false,
-      this.isRowheader = true,
-      this.defaultColumnWidth = 20,
-      this.defaultRowHeight = 30,
-      this.defaultRowHeaderWidth = 30,
-      this.additonalColumnsLeft,
-      this.autoGenerateColumns = true,
-      this.additonalColumnsRight,
-      this.autoGenerateColumnDetails,
-      this.scrollBarThickness = 40,
-      this.maxColumnWidth = 300,
-      this.showExportExcelButton = false,
-      this.showExportPDFButton = false,
-      this.columnHeaderColor = Colors.black26,
-      this.rowHeaderColor = Colors.black12,
-      this.dataColumnHeadertexts,
-      this.dataColumnWidths,
-      this.hiddenDataColumns,
-      this.controller,
-      this.textColor = Colors.black87,
-      this.headerAlignment = Alignment.center,
-      this.cellAlignment = Alignment.center,
-      this.headerFontSize = 16,
-      this.cellFontSize = 14,
-      this.cellPadding = const EdgeInsets.all(5),
-      this.dataColumnAlignments,
-      this.dataColumnPadding,
-      this.allowFilter = false,
-      this.fieldTypes,
-      this.dateFormat = "dd/MM/yyyy"})
-      : super(key: key);
+  const DataGridView({
+    Key? key,
+    required this.data,
+    this.isFooter = false,
+    this.isRowheader = true,
+    this.defaultColumnWidth = 20,
+    this.defaultRowHeight = 30,
+    this.defaultRowHeaderWidth = 30,
+    this.additonalColumnsLeft,
+    this.autoGenerateColumns = true,
+    this.additonalColumnsRight,
+    this.autoGenerateColumnDetails,
+    this.scrollBarThickness = 40,
+    this.maxColumnWidth = 300,
+    this.showExportExcelButton = false,
+    this.showExportPDFButton = false,
+    this.columnHeaderColor = Colors.black26,
+    this.rowHeaderColor = Colors.black12,
+    this.dataColumnHeadertexts,
+    this.dataColumnWidths,
+    this.hiddenDataColumns,
+    this.controller,
+    this.textColor = Colors.black87,
+    this.headerAlignment = Alignment.center,
+    this.cellAlignment = Alignment.center,
+    this.headerFontSize = 16,
+    this.cellFontSize = 14,
+    this.cellPadding = const EdgeInsets.all(5),
+    this.dataColumnAlignments,
+    this.dataColumnPadding,
+    this.allowFilter = false,
+    this.fieldTypes,
+    this.dateFormat = "dd/MM/yyyy",
+    this.autoMobileView = true,
+    this.mobileView,
+  }) : super(key: key);
 
   final List<Map<String, dynamic>> data;
   final bool isFooter;
@@ -100,6 +102,8 @@ class DataGridView extends StatefulWidget {
   final bool allowFilter;
   final String dateFormat;
 // final bool showS
+  final bool autoMobileView;
+  final bool? mobileView;
   @override
   State<DataGridView> createState() => _DataGridViewState();
 
@@ -325,6 +329,7 @@ class _DataGridViewState extends State<DataGridView> {
   late ScrollController _lastColumnController;
 
   List<Map<String, dynamic>> filterdata = [];
+  bool isMobileView = false;
   @override
   void initState() {
     super.initState();
@@ -355,6 +360,14 @@ class _DataGridViewState extends State<DataGridView> {
       };
     }
     // debugPrint("DataGridView initstate");
+    if (widget.autoMobileView) {
+      if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+        isMobileView = true;
+      }
+    }
+    if (widget.mobileView != null) {
+      isMobileView = widget.mobileView!;
+    }
   }
 
   _generatePDF(
@@ -387,7 +400,8 @@ class _DataGridViewState extends State<DataGridView> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint("DataGridView Build");
+    // debugPrint("DataGridView Build");
+
     bool isScrollVisible = (kIsWeb ? true : Platform.isLinux || Platform.isMacOS || Platform.isWindows);
     double scrollBarThickness = isScrollVisible ? widget.scrollBarThickness : 5;
     var data = DataGridView._generateColumnWidthAndRowHeight(
@@ -406,6 +420,80 @@ class _DataGridViewState extends State<DataGridView> {
     rowHeights = data[1];
     getFiltereData();
     applySort();
+    if (isMobileView) {
+      int rowIndex = -1;
+      return SingleChildScrollView(
+        child: Column(
+          children: widget.data.map(
+            (row) {
+              rowIndex++;
+              return Padding(
+                padding: EdgeInsets.all(10),
+                child: Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(10),
+                    child: Column(
+                      children: row.keys.map(
+                            (e) {
+                              var str = row[e].toString();
+                              if (str == "null") {
+                                str = "";
+                              }
+                              if (widget.hiddenDataColumns?.contains(e) ?? false) {
+                                return Container();
+                              }
+                              return Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      e,
+                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                    ),
+                                    flex: 3,
+                                  ),
+                                  Expanded(
+                                    child: Text(str),
+                                    flex: 5,
+                                  ),
+                                ],
+                              );
+                            },
+                          ).toList() +
+                          [
+                            Row(
+                              children: widget.additonalColumnsLeft!
+                                  .map(
+                                    (e) => Expanded(
+                                        flex: 1,
+                                        child: Padding(
+                                          padding: EdgeInsets.all(2),
+                                          child: ElevatedButton(
+                                            child: Icon(e.iconData),
+                                            onPressed: () {
+                                              if (e.onCellPressed != null) {
+                                                e.onCellPressed!(
+                                                    rowIndex,
+                                                    0,
+                                                    (e.onClickReturnFieldNames ?? [])
+                                                        .map((cellname) => filterdata[rowIndex][cellname])
+                                                        .toList());
+                                              }
+                                            },
+                                          ),
+                                        )),
+                                  )
+                                  .toList(),
+                            ),
+                          ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ).toList(),
+        ),
+      );
+    }
     return Column(
       children: [
         Row(
@@ -431,7 +519,7 @@ class _DataGridViewState extends State<DataGridView> {
                       },
                     ),
                   )
-                : Container(),
+                : Container()
           ],
         ),
         //Header
@@ -485,12 +573,12 @@ class _DataGridViewState extends State<DataGridView> {
                           )
                           .toList() +
                       widget.data.first.keys.map(
-                        (e) {
+                        (fieldname) {
                           return DataGridViewCell(
                             color: widget.columnHeaderColor,
-                            text: e,
-                            cellWidth: (columnWidths[e] ?? widget.defaultColumnWidth) + 25,
-                            visible: !(widget.hiddenDataColumns ?? []).contains(e),
+                            text: (widget.dataColumnHeadertexts ?? {})[fieldname] ?? fieldname,
+                            cellWidth: (columnWidths[fieldname] ?? widget.defaultColumnWidth) + 25,
+                            visible: !(widget.hiddenDataColumns ?? []).contains(fieldname),
                             cellHeight: widget.defaultRowHeight,
                             style: TextStyle(
                               // fontWeight: FontWeight.bold,
@@ -501,65 +589,7 @@ class _DataGridViewState extends State<DataGridView> {
                             extraCellheight: _extraCellPadding,
                             alignment: widget.headerAlignment,
                             padding: widget.cellPadding,
-                            trailing:
-                                // Row(z
-                                //   children: [
-                                //     SizedBox(
-                                //   width: 25,
-                                //   child: TextButton(
-                                //     style: TextButton.styleFrom(
-                                //       padding: EdgeInsets.zero,
-                                //       backgroundColor: Colors.white.withOpacity(0.1),
-                                //     ),
-                                //     onPressed: () {
-                                //       if (sortData.keys.contains(e)) {
-                                //         if (sortData[e] == "ASC") {
-                                //           sortData[e] = "DESC";
-                                //         } else {
-                                //           sortData.remove(e);
-                                //         }
-                                //       } else {
-                                //         sortData.addAll({e: "ASC"});
-                                //       }
-                                //       var keys = List.from(sortData.keys);
-                                //       for (var key in keys) {
-                                //         if (key != e) sortData.remove(key);
-                                //       }
-                                //       applySort();
-                                //       setState(() {});
-                                //     },
-                                //     child: Icon(
-                                //       sortData.keys.contains(e)
-                                //           ? sortData[e] == "ASC"
-                                //               ? Icons.arrow_downward
-                                //               : Icons.arrow_upward
-                                //           : Icons.sort,
-                                //       size: 15,
-                                //     ),
-                                //   ),
-                                // ),
-                                // Expanded(child: Container()),
-                                // SizedBox(
-                                //   width: 25,
-                                //   child: TextButton(
-                                //     style: TextButton.styleFrom(
-                                //       padding: EdgeInsets.zero,
-                                //       backgroundColor: Colors.white.withOpacity(0.1),
-                                //     ),
-                                //     onPressed: () {
-                                //       applyFilter(e);
-                                //     },
-                                //     child: Icon(
-                                //       filterIinfo.keys.contains(e)
-                                //           ? filterIinfo[e]!.values.where((element) => element == false).isNotEmpty
-                                //               ? Icons.filter_alt
-                                //               : Icons.filter_alt_off
-                                //           : Icons.filter_alt_off,
-                                //       size: 15,
-                                //     ),
-                                //   ),
-                                // ),
-                                Padding(
+                            trailing: Padding(
                               padding: EdgeInsets.only(right: 2),
                               child: SizedBox(
                                 width: 20,
@@ -580,7 +610,7 @@ class _DataGridViewState extends State<DataGridView> {
                                             value: 1,
                                             child: Row(
                                               children: [
-                                                sortData[e] == "ASC"
+                                                sortData[fieldname] == "ASC"
                                                     ? Icon(Icons.check_outlined)
                                                     : const SizedBox(width: 25),
                                                 const SizedBox(width: 5),
@@ -594,7 +624,7 @@ class _DataGridViewState extends State<DataGridView> {
                                             value: 2,
                                             child: Row(
                                               children: [
-                                                sortData[e] == "DESC"
+                                                sortData[fieldname] == "DESC"
                                                     ? Icon(Icons.check_outlined)
                                                     : const SizedBox(width: 25),
                                                 const SizedBox(width: 5),
@@ -604,7 +634,7 @@ class _DataGridViewState extends State<DataGridView> {
                                               ],
                                             ),
                                           ),
-                                          if (sortData.containsKey(e))
+                                          if (sortData.containsKey(fieldname))
                                             PopupMenuItem(
                                               value: 3,
                                               child: Row(
@@ -629,65 +659,39 @@ class _DataGridViewState extends State<DataGridView> {
                                               ],
                                             ),
                                           ),
-                                          // PopupMenuItem(
-                                          //   value: 5,
-                                          //   child: Row(
-                                          //     children: [
-                                          //       Icon(Icons.filter_alt_off),
-                                          //       const SizedBox(width: 5),
-                                          //       Text("Reset Filter"),
-                                          //     ],
-                                          //   ),
-                                          // ),
                                         ],
                                         elevation: 8.0,
                                       ).then((value) {
                                         switch (value) {
                                           case 1:
-                                            // if (sortData.keys.contains(e)) {
-                                            //   if (sortData[e] == "ASC") {
-                                            //     sortData[e] = "DESC";
-                                            //   } else {
-                                            //     sortData.remove(e);
-                                            //   }
-                                            // } else {
-                                            //   sortData.addAll({e: "ASC"});
-                                            // }
-                                            sortData.remove(e);
-                                            sortData.addAll({e: "ASC"});
+                                            sortData.remove(fieldname);
+                                            sortData.addAll({fieldname: "ASC"});
                                             var keys = List.from(sortData.keys);
                                             for (var key in keys) {
-                                              if (key != e) sortData.remove(key);
+                                              if (key != fieldname) sortData.remove(key);
                                             }
-                                            // applySort();
                                             setState(() {});
-                                            // print(value);
                                             break;
                                           case 2:
-                                            sortData.remove(e);
-                                            sortData.addAll({e: "DESC"});
+                                            sortData.remove(fieldname);
+                                            sortData.addAll({fieldname: "DESC"});
                                             var keys = List.from(sortData.keys);
                                             for (var key in keys) {
-                                              if (key != e) sortData.remove(key);
+                                              if (key != fieldname) sortData.remove(key);
                                             }
-                                            // applySort();
                                             setState(() {});
                                             break;
                                           case 3:
-                                            sortData.remove(e);
-                                            // sortData.addAll({e: "ASC"});
+                                            sortData.remove(fieldname);
                                             var keys = List.from(sortData.keys);
                                             for (var key in keys) {
-                                              if (key != e) sortData.remove(key);
+                                              if (key != fieldname) sortData.remove(key);
                                             }
-                                            // applySort();
                                             setState(() {});
                                             break;
                                           case 4:
-                                            applyFilter(e);
+                                            applyFilter(fieldname);
                                             break;
-                                          // case 5:
-                                          //   break;
                                         }
                                       });
                                       //
@@ -700,8 +704,6 @@ class _DataGridViewState extends State<DataGridView> {
                                 ),
                               ),
                             ),
-                            //   ],
-                            // ),
                           );
                         },
                       ).toList() +

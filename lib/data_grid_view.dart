@@ -416,8 +416,8 @@ class _DataGridViewState extends State<DataGridView> {
       widget.headerFontSize,
       widget.cellFontSize,
     );
-    columnWidths = data[0];
-    rowHeights = data[1];
+    columnWidths = data[0] ?? {};
+    rowHeights = data[1] ?? {};
     getFiltereData();
     applySort();
     if (isMobileView) {

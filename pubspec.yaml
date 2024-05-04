@@ -17,7 +17,7 @@ dependencies:
   printing: ^5.10.3
   syncfusion_flutter_xlsio: ^21.1.37
   excel: ^2.1.0
-  intl: ^0.18.1
+  intl: ^0.19.0
 
 dev_dependencies:
   flutter_test:

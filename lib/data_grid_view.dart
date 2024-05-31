@@ -572,141 +572,143 @@ class _DataGridViewState extends State<DataGridView> {
                             ),
                           )
                           .toList() +
-                      widget.data.first.keys.map(
-                        (fieldname) {
-                          return DataGridViewCell(
-                            color: widget.columnHeaderColor,
-                            text: (widget.dataColumnHeadertexts ?? {})[fieldname] ?? fieldname,
-                            cellWidth: (columnWidths[fieldname] ?? widget.defaultColumnWidth) + 25,
-                            visible: !(widget.hiddenDataColumns ?? []).contains(fieldname),
-                            cellHeight: widget.defaultRowHeight,
-                            style: TextStyle(
-                              // fontWeight: FontWeight.bold,
-                              fontSize: widget.headerFontSize,
-                              color: widget.textColor,
-                            ),
-                            onCellPressed: () {},
-                            extraCellheight: _extraCellPadding,
-                            alignment: widget.headerAlignment,
-                            padding: widget.cellPadding,
-                            trailing: Padding(
-                              padding: EdgeInsets.only(right: 2),
-                              child: SizedBox(
-                                width: 20,
-                                child: Builder(
-                                  builder: (context1) => TextButton(
-                                    style: TextButton.styleFrom(
-                                      padding: EdgeInsets.zero,
-                                      backgroundColor: Colors.white.withOpacity(0.1),
-                                    ),
-                                    onPressed: () {
-                                      Offset position =
-                                          (context1.findRenderObject() as RenderBox).localToGlobal(Offset.zero);
-                                      showMenu(
-                                        context: context1,
-                                        position: RelativeRect.fromLTRB(position.dx, position.dy + 30, 100000, 0),
-                                        items: [
-                                          PopupMenuItem(
-                                            value: 1,
-                                            child: Row(
-                                              children: [
-                                                sortData[fieldname] == "ASC"
-                                                    ? Icon(Icons.check_outlined)
-                                                    : const SizedBox(width: 25),
-                                                const SizedBox(width: 5),
-                                                Icon(Icons.arrow_downward),
-                                                const SizedBox(width: 5),
-                                                Text("Sort Ascending"),
-                                              ],
-                                            ),
+                      (widget.data.isEmpty
+                          ? []
+                          : widget.data.first.keys.map(
+                              (fieldname) {
+                                return DataGridViewCell(
+                                  color: widget.columnHeaderColor,
+                                  text: (widget.dataColumnHeadertexts ?? {})[fieldname] ?? fieldname,
+                                  cellWidth: (columnWidths[fieldname] ?? widget.defaultColumnWidth) + 25,
+                                  visible: !(widget.hiddenDataColumns ?? []).contains(fieldname),
+                                  cellHeight: widget.defaultRowHeight,
+                                  style: TextStyle(
+                                    // fontWeight: FontWeight.bold,
+                                    fontSize: widget.headerFontSize,
+                                    color: widget.textColor,
+                                  ),
+                                  onCellPressed: () {},
+                                  extraCellheight: _extraCellPadding,
+                                  alignment: widget.headerAlignment,
+                                  padding: widget.cellPadding,
+                                  trailing: Padding(
+                                    padding: EdgeInsets.only(right: 2),
+                                    child: SizedBox(
+                                      width: 20,
+                                      child: Builder(
+                                        builder: (context1) => TextButton(
+                                          style: TextButton.styleFrom(
+                                            padding: EdgeInsets.zero,
+                                            backgroundColor: Colors.white.withOpacity(0.1),
                                           ),
-                                          PopupMenuItem(
-                                            value: 2,
-                                            child: Row(
-                                              children: [
-                                                sortData[fieldname] == "DESC"
-                                                    ? Icon(Icons.check_outlined)
-                                                    : const SizedBox(width: 25),
-                                                const SizedBox(width: 5),
-                                                Icon(Icons.arrow_upward),
-                                                const SizedBox(width: 5),
-                                                Text("Sort Descending"),
+                                          onPressed: () {
+                                            Offset position =
+                                                (context1.findRenderObject() as RenderBox).localToGlobal(Offset.zero);
+                                            showMenu(
+                                              context: context1,
+                                              position: RelativeRect.fromLTRB(position.dx, position.dy + 30, 100000, 0),
+                                              items: [
+                                                PopupMenuItem(
+                                                  value: 1,
+                                                  child: Row(
+                                                    children: [
+                                                      sortData[fieldname] == "ASC"
+                                                          ? const Icon(Icons.check_outlined)
+                                                          : const SizedBox(width: 25),
+                                                      const SizedBox(width: 5),
+                                                      const Icon(Icons.arrow_downward),
+                                                      const SizedBox(width: 5),
+                                                      const Text("Sort Ascending"),
+                                                    ],
+                                                  ),
+                                                ),
+                                                PopupMenuItem(
+                                                  value: 2,
+                                                  child: Row(
+                                                    children: [
+                                                      sortData[fieldname] == "DESC"
+                                                          ? const Icon(Icons.check_outlined)
+                                                          : const SizedBox(width: 25),
+                                                      const SizedBox(width: 5),
+                                                      const Icon(Icons.arrow_upward),
+                                                      const SizedBox(width: 5),
+                                                      const Text("Sort Descending"),
+                                                    ],
+                                                  ),
+                                                ),
+                                                if (sortData.containsKey(fieldname))
+                                                  const PopupMenuItem(
+                                                    value: 3,
+                                                    child: Row(
+                                                      children: [
+                                                        SizedBox(width: 25),
+                                                        SizedBox(width: 5),
+                                                        Icon(Icons.sort_by_alpha_outlined),
+                                                        SizedBox(width: 5),
+                                                        Text("Reset Sort"),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                const PopupMenuItem(
+                                                  value: 4,
+                                                  child: Row(
+                                                    children: [
+                                                      SizedBox(width: 25),
+                                                      SizedBox(width: 5),
+                                                      Icon(Icons.filter_alt),
+                                                      SizedBox(width: 5),
+                                                      Text("Filter"),
+                                                    ],
+                                                  ),
+                                                ),
                                               ],
-                                            ),
+                                              elevation: 8.0,
+                                            ).then((value) {
+                                              switch (value) {
+                                                case 1:
+                                                  sortData.remove(fieldname);
+                                                  sortData.addAll({fieldname: "ASC"});
+                                                  var keys = List.from(sortData.keys);
+                                                  for (var key in keys) {
+                                                    if (key != fieldname) sortData.remove(key);
+                                                  }
+                                                  setState(() {});
+                                                  break;
+                                                case 2:
+                                                  sortData.remove(fieldname);
+                                                  sortData.addAll({fieldname: "DESC"});
+                                                  var keys = List.from(sortData.keys);
+                                                  for (var key in keys) {
+                                                    if (key != fieldname) sortData.remove(key);
+                                                  }
+                                                  setState(() {});
+                                                  break;
+                                                case 3:
+                                                  sortData.remove(fieldname);
+                                                  var keys = List.from(sortData.keys);
+                                                  for (var key in keys) {
+                                                    if (key != fieldname) sortData.remove(key);
+                                                  }
+                                                  setState(() {});
+                                                  break;
+                                                case 4:
+                                                  applyFilter(fieldname);
+                                                  break;
+                                              }
+                                            });
+                                            //
+                                          },
+                                          child: const Icon(
+                                            Icons.more_vert,
+                                            size: 15,
                                           ),
-                                          if (sortData.containsKey(fieldname))
-                                            PopupMenuItem(
-                                              value: 3,
-                                              child: Row(
-                                                children: [
-                                                  const SizedBox(width: 25),
-                                                  const SizedBox(width: 5),
-                                                  Icon(Icons.sort_by_alpha_outlined),
-                                                  const SizedBox(width: 5),
-                                                  Text("Reset Sort"),
-                                                ],
-                                              ),
-                                            ),
-                                          PopupMenuItem(
-                                            value: 4,
-                                            child: Row(
-                                              children: [
-                                                const SizedBox(width: 25),
-                                                const SizedBox(width: 5),
-                                                Icon(Icons.filter_alt),
-                                                const SizedBox(width: 5),
-                                                Text("Filter"),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                        elevation: 8.0,
-                                      ).then((value) {
-                                        switch (value) {
-                                          case 1:
-                                            sortData.remove(fieldname);
-                                            sortData.addAll({fieldname: "ASC"});
-                                            var keys = List.from(sortData.keys);
-                                            for (var key in keys) {
-                                              if (key != fieldname) sortData.remove(key);
-                                            }
-                                            setState(() {});
-                                            break;
-                                          case 2:
-                                            sortData.remove(fieldname);
-                                            sortData.addAll({fieldname: "DESC"});
-                                            var keys = List.from(sortData.keys);
-                                            for (var key in keys) {
-                                              if (key != fieldname) sortData.remove(key);
-                                            }
-                                            setState(() {});
-                                            break;
-                                          case 3:
-                                            sortData.remove(fieldname);
-                                            var keys = List.from(sortData.keys);
-                                            for (var key in keys) {
-                                              if (key != fieldname) sortData.remove(key);
-                                            }
-                                            setState(() {});
-                                            break;
-                                          case 4:
-                                            applyFilter(fieldname);
-                                            break;
-                                        }
-                                      });
-                                      //
-                                    },
-                                    child: Icon(
-                                      Icons.more_vert,
-                                      size: 15,
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ).toList() +
+                                );
+                              },
+                            ).toList()) +
                       (widget.additonalColumnsRight ?? [])
                           .map(
                             (e) => DataGridViewCell(

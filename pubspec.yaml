@@ -14,7 +14,7 @@ dependencies:
     sdk: flutter
   linked_scroll_controller: ^0.2.0
   pdf: ^3.10.1
-  printing: ^5.10.3
+  printing: ^5.12.0 
   # syncfusion_flutter_pdfviewer: ^24.2.8
   # syncfusion_flutter_xlsio: ^25.1.42
   excel: ^4.0.3

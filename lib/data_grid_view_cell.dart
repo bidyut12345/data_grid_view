@@ -1,5 +1,6 @@
 import 'package:data_grid_view/data_grid_view_column.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class DataGridViewCell extends StatelessWidget {
   final String text;
@@ -58,34 +59,39 @@ class DataGridViewCell extends StatelessWidget {
                   children: [
                     Expanded(
                       child: columnType == ColumnType.textColumn
-                          ? TextButton(
-                              style: ButtonStyle(
-                                padding: MaterialStateProperty.resolveWith<EdgeInsetsGeometry>(
-                                    (states) => const EdgeInsets.all(2)),
-                              ),
-                              onPressed: () {
-                                onCellPressed();
+                          ? GestureDetector(
+                              onLongPress: () {
+                                Clipboard.setData(ClipboardData(text: text));
                               },
-                              child: Align(
-                                alignment: alignment,
-                                child: Padding(
-                                  padding: padding,
-                                  child: Tooltip(
-                                    message: toolTip ?? "",
-                                    child: Text(
-                                      text == "null" ? "" : text,
-                                      style: style ??
-                                          const TextStyle(
-                                            fontSize: 14.0,
-                                            color: Color.fromARGB(255, 39, 39, 39),
-                                          ),
-                                      textAlign: ([Alignment.bottomCenter, Alignment.topCenter, Alignment.center]
-                                              .contains(alignment))
-                                          ? TextAlign.center
-                                          : ([Alignment.topLeft, Alignment.bottomLeft, Alignment.centerLeft]
-                                                  .contains(alignment))
-                                              ? TextAlign.left
-                                              : TextAlign.right,
+                              child: TextButton(
+                                style: ButtonStyle(
+                                  padding: MaterialStateProperty.resolveWith<EdgeInsetsGeometry>(
+                                      (states) => const EdgeInsets.all(2)),
+                                ),
+                                onPressed: () {
+                                  onCellPressed();
+                                },
+                                child: Align(
+                                  alignment: alignment,
+                                  child: Padding(
+                                    padding: padding,
+                                    child: Tooltip(
+                                      message: toolTip ?? "",
+                                      child: Text(
+                                        text,
+                                        style: style ??
+                                            const TextStyle(
+                                              fontSize: 14.0,
+                                              color: Color.fromARGB(255, 39, 39, 39),
+                                            ),
+                                        textAlign: ([Alignment.bottomCenter, Alignment.topCenter, Alignment.center]
+                                                .contains(alignment))
+                                            ? TextAlign.center
+                                            : ([Alignment.topLeft, Alignment.bottomLeft, Alignment.centerLeft]
+                                                    .contains(alignment))
+                                                ? TextAlign.left
+                                                : TextAlign.right,
+                                      ),
                                     ),
                                   ),
                                 ),

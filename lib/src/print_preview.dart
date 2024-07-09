@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:data_grid_view/data_grid_view.dart';
 import 'package:data_grid_view/src/generate_pdf.dart';
 import 'package:data_grid_view/src/get_save_file_path.dart';

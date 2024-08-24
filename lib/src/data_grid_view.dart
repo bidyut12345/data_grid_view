@@ -548,7 +548,7 @@ class _DataGridViewState extends State<DataGridView> {
                                         }));
                                         //Last Row
                                         ll.add(Container(
-                                          color: Colors.red,
+                                          // color: Colors.red,
                                           width: columnWidths.values.toList().sum + scrollBarThickness,
                                           height: scrollBarThickness + 3,
                                         ));
@@ -562,7 +562,7 @@ class _DataGridViewState extends State<DataGridView> {
                           ),
 
                           Container(
-                            color: Colors.green,
+                            // color: Colors.green,
                             width: scrollBarThickness + 3,
                             child: Scrollbar(
                               controller: lastColumnScrollController,

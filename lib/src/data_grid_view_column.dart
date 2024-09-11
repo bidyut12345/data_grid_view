@@ -18,7 +18,7 @@ class DataGridViewColumn {
   });
   final double? columnWidth;
   final String headerText;
-  final String? cellText;
+  final String? Function(int rowIndex)? cellText;
   final String? toolTip;
   final String? dataField;
   final List<String>? onClickReturnFieldNames;

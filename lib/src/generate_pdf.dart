@@ -34,6 +34,7 @@ pw.Document generatePdf(
   DataGridView widget,
   List<Map<String, dynamic>> data,
   String header,
+  String subHeader,
   PdfPageFormat pageFormat,
   Map<String, double> columnWidths,
   double defaultColumnWidth,
@@ -62,14 +63,28 @@ pw.Document generatePdf(
     pw.MultiPage(
       maxPages: 10000,
       pageFormat: newPageFomat,
-      header: (context) =>
-          pw.Padding(padding: const pw.EdgeInsets.all(0), child: pw.Text(header, textScaleFactor: 1.5)),
+      header: (context) => pw.Padding(
+        padding: const pw.EdgeInsets.all(0),
+        child: pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text(
+              header,
+              style: pw.TextStyle(fontSize: 14 * scale),
+            ),
+            pw.Text(
+              subHeader,
+              style: pw.TextStyle(fontSize: 10 * scale),
+            ),
+          ],
+        ),
+      ),
       footer: (context) => pw.Align(
           alignment: pw.Alignment.centerRight,
           child: pw.Padding(
               padding: const pw.EdgeInsets.all(0),
               child: pw.Text("Printed on ${DateTime.now().toString().split(".").first}",
-                  style: pw.TextStyle(fontSize: 6)))),
+                  style: pw.TextStyle(fontSize: 6 * scale)))),
       build: (pw.Context context) {
         return [
           pw.TableHelper.fromTextArray(
@@ -120,6 +135,7 @@ savePdf(
   DataGridView widget,
   List<Map<String, dynamic>> data,
   String header,
+  String subHeader,
   PdfPageFormat pageFormat,
   Map<String, double> columnWidths,
   double defaultColumnWidth,
@@ -129,14 +145,15 @@ savePdf(
 }) async {
   if (kIsWeb) {
     await Printing.sharePdf(
-        bytes: await generatePdf(widget, data, header, pageFormat, columnWidths, defaultColumnWidth, hiddenDataColumns,
+        bytes: await generatePdf(
+                widget, data, header, subHeader, pageFormat, columnWidths, defaultColumnWidth, hiddenDataColumns,
                 scale: scale)
             .save(),
         filename: filename);
   } else {
     final file = File(filename);
     await file.writeAsBytes(await generatePdf(
-            widget, data, header, pageFormat, columnWidths, defaultColumnWidth, hiddenDataColumns,
+            widget, data, header, subHeader, pageFormat, columnWidths, defaultColumnWidth, hiddenDataColumns,
             scale: scale)
         .save());
   }

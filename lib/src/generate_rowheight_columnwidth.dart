@@ -1,4 +1,3 @@
- 
 import 'dart:io';
 
 import 'package:collection/collection.dart';
@@ -36,7 +35,7 @@ Map<int, dynamic> generateColumnWidthAndRowHeight(
     additionalHeight += 10;
   }
   TextPainter textPainter;
-  double headerHeight = widget.defaultRowHeight + 10;
+  double headerHeight = widget.defaultRowHeight + widget.headerPadding.top + widget.headerPadding.bottom;
   filterdata.first.keys.toList().forEach((fieldname) {
     if (!(widget.hiddenDataColumns ?? []).contains(fieldname)) {
       if ((widget.dataColumnWidths ?? {}).containsKey(fieldname)) {
@@ -75,9 +74,10 @@ Map<int, dynamic> generateColumnWidthAndRowHeight(
           ..textDirection = TextDirection.ltr
           ..layout(minWidth: 0, maxWidth: maxFieldWidth - (additonalWidth)); //widget.maxColumnWidth
 
-        if (headerHeight < (textPainter.height + additionalHeight + 10) &&
+        if (headerHeight <
+                (textPainter.height + additionalHeight + widget.headerPadding.top + widget.headerPadding.bottom) &&
             (textPainter.height + additionalHeight) > widget.defaultRowHeight) {
-          headerHeight = textPainter.height + additionalHeight + 10;
+          headerHeight = textPainter.height + additionalHeight + widget.headerPadding.top + widget.headerPadding.bottom;
         }
 
         columnWidths.addAll({fieldname: maxFieldWidth});
@@ -93,7 +93,7 @@ Map<int, dynamic> generateColumnWidthAndRowHeight(
       columnWidths[e] = (columnWidths[e] ?? 0) * maxWidth / totalWidth;
     }
     rowHeights = {};
-    headerHeight = widget.defaultRowHeight + 10;
+    headerHeight = widget.defaultRowHeight + 10 + widget.headerPadding.top + widget.headerPadding.bottom;
     filterdata.first.keys.toList().forEach((fieldname) {
       if (!(widget.hiddenDataColumns ?? []).contains(fieldname)) {
         if ((widget.dataColumnWidths ?? {}).containsKey(fieldname)) {
@@ -120,9 +120,11 @@ Map<int, dynamic> generateColumnWidthAndRowHeight(
             ..textDirection = TextDirection.ltr
             ..layout(minWidth: 0, maxWidth: maxFieldWidth); //widget.maxColumnWidth
 
-          if (headerHeight < (textPainter.height + additionalHeight + 10) &&
+          if (headerHeight <
+                  (textPainter.height + additionalHeight + widget.headerPadding.top + widget.headerPadding.bottom) &&
               (textPainter.height + additionalHeight) > widget.defaultRowHeight) {
-            headerHeight = textPainter.height + additionalHeight + 10;
+            headerHeight =
+                textPainter.height + additionalHeight + widget.headerPadding.top + widget.headerPadding.bottom;
           }
         }
       }

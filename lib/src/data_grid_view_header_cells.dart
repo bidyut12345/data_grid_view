@@ -27,7 +27,7 @@ List<Widget> headerCells(
               onCellPressed: () {},
               extraCellheight: extraCellPadding,
               alignment: widget.headerAlignment,
-              padding: widget.cellPadding,
+              padding: widget.headerPadding,
             ),
           )
           .toList() +
@@ -53,7 +53,7 @@ List<Widget> headerCells(
                   },
                   extraCellheight: extraCellPadding,
                   alignment: widget.headerAlignment,
-                  padding: widget.cellPadding,
+                  padding: widget.headerPadding,
                   trailing: Padding(
                     padding: const EdgeInsets.only(right: 2),
                     child: SizedBox(
@@ -95,7 +95,7 @@ List<Widget> headerCells(
               onCellPressed: () {},
               extraCellheight: extraCellPadding,
               alignment: widget.headerAlignment,
-              padding: widget.cellPadding,
+              padding: widget.headerPadding,
             ),
           )
           .toList();

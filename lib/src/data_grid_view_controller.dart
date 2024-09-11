@@ -1,6 +1,6 @@
 class DataGridViewController {
   Function({String fileName, double scale, String reportHeaderText})? generatePdf;
-  Function({double scale, String reportHeaderText})? printPreview;
+  Function({double scale, String reportHeaderText, String reportSubHeaderText})? printPreview;
   Function({String fileName, String reportHeaderText})? generateXls;
   Function? resetFilterAndSort;
   // Function? printPreview;

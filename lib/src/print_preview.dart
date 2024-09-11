@@ -7,39 +7,47 @@ import 'package:printing/printing.dart';
 // import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 class PrintPreviewDataGrid extends StatefulWidget {
-  const PrintPreviewDataGrid(
-      {Key? key,
-      required this.dg,
-      required this.reportTitle,
-      required this.filterData,
-      required this.columnWidths,
-      required this.filename,
-      required this.onclose,
-      this.isLandscapePreview = false})
-      : super(key: key);
+  const PrintPreviewDataGrid({
+    Key? key,
+    required this.dg,
+    required this.reportTitle,
+    required this.reportSubTitle,
+    required this.filterData,
+    required this.columnWidths,
+    required this.filename,
+    required this.onclose,
+    this.isLandscapePreview = false,
+    this.scale = 1.0,
+  }) : super(key: key);
   final bool isLandscapePreview;
   final DataGridView dg;
   final String reportTitle;
+  final String reportSubTitle;
   final String filename;
   final List<Map<String, dynamic>> filterData;
   final Map<String, double> columnWidths;
   final Function onclose;
+  final double scale;
   @override
   State<PrintPreviewDataGrid> createState() => _PrintPreviewDataGridState();
 }
 
 class _PrintPreviewDataGridState extends State<PrintPreviewDataGrid> {
-  double margin = 35.0;
+  double margin = 20.0;
   late PdfPageFormat dataPageFormat;
+  late PdfPageFormat changedFormat;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     if (widget.isLandscapePreview) {
-      dataPageFormat = PdfPageFormat.a4.landscape.copyWith(marginLeft: margin, marginTop: margin, marginRight: margin, marginBottom: margin);
+      dataPageFormat = PdfPageFormat.a4.landscape
+          .copyWith(marginLeft: margin, marginTop: margin, marginRight: margin, marginBottom: margin);
     } else {
-      dataPageFormat = PdfPageFormat.a4.copyWith(marginLeft: margin, marginTop: margin, marginRight: margin, marginBottom: margin);
+      dataPageFormat =
+          PdfPageFormat.a4.copyWith(marginLeft: margin, marginTop: margin, marginRight: margin, marginBottom: margin);
     }
+    changedFormat = dataPageFormat;
   }
 
   @override
@@ -77,8 +85,18 @@ class _PrintPreviewDataGridState extends State<PrintPreviewDataGrid> {
           onPressed: () async {
             String? path = await getSaveFilePath("${widget.reportTitle}.pdf");
             if (path == null) return;
-            await savePdf(widget.dg, widget.filterData, widget.reportTitle, dataPageFormat, widget.columnWidths, widget.dg.defaultColumnWidth, path,
-                widget.dg.hiddenDataColumns ?? []);
+            await savePdf(
+              widget.dg,
+              widget.filterData,
+              widget.reportTitle,
+              widget.reportSubTitle,
+              changedFormat,
+              widget.columnWidths,
+              widget.dg.defaultColumnWidth,
+              path,
+              widget.dg.hiddenDataColumns ?? [],
+              scale: widget.scale,
+            );
           },
           icon: const Row(
             mainAxisSize: MainAxisSize.min,
@@ -101,19 +119,33 @@ class _PrintPreviewDataGridState extends State<PrintPreviewDataGrid> {
         ),
       ],
       pageFormats: {
-        "Letter": PdfPageFormat.letter.copyWith(marginLeft: margin, marginTop: margin, marginRight: margin, marginBottom: margin),
-        "Legal": PdfPageFormat.legal.copyWith(marginLeft: margin, marginTop: margin, marginRight: margin, marginBottom: margin),
-        "A3": PdfPageFormat.a3.copyWith(marginLeft: margin, marginTop: margin, marginRight: margin, marginBottom: margin),
-        "A4": PdfPageFormat.a4.copyWith(marginLeft: margin, marginTop: margin, marginRight: margin, marginBottom: margin),
-        "A5": PdfPageFormat.a5.copyWith(marginLeft: margin, marginTop: margin, marginRight: margin, marginBottom: margin),
+        "Letter": PdfPageFormat.letter
+            .copyWith(marginLeft: margin, marginTop: margin, marginRight: margin, marginBottom: margin),
+        "Legal": PdfPageFormat.legal
+            .copyWith(marginLeft: margin, marginTop: margin, marginRight: margin, marginBottom: margin),
+        "A3":
+            PdfPageFormat.a3.copyWith(marginLeft: margin, marginTop: margin, marginRight: margin, marginBottom: margin),
+        "A4":
+            PdfPageFormat.a4.copyWith(marginLeft: margin, marginTop: margin, marginRight: margin, marginBottom: margin),
+        "A5":
+            PdfPageFormat.a5.copyWith(marginLeft: margin, marginTop: margin, marginRight: margin, marginBottom: margin),
       },
       allowPrinting: true,
       canDebug: false,
       canChangeOrientation: true,
       build: (data) async {
+        changedFormat = data;
         return await generatePdf(
-                widget.dg, widget.filterData, widget.reportTitle, data, widget.columnWidths, widget.dg.defaultColumnWidth, widget.dg.hiddenDataColumns ?? [])
-            .save();
+          widget.dg,
+          widget.filterData,
+          widget.reportTitle,
+          widget.reportSubTitle,
+          changedFormat,
+          widget.columnWidths,
+          widget.dg.defaultColumnWidth,
+          widget.dg.hiddenDataColumns ?? [],
+          scale: widget.scale,
+        ).save();
       },
       onPageFormatChanged: (data) {
         dataPageFormat = data;

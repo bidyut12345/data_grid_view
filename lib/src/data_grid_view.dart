@@ -51,6 +51,8 @@ class DataGridView extends StatefulWidget {
     this.headerFontSize = 16,
     this.cellFontSize = 14,
     this.cellPadding = const EdgeInsets.all(5),
+    this.headerPadding = const EdgeInsets.all(5),
+    this.footerPadding = const EdgeInsets.all(5),
     this.dataColumnAlignments,
     this.dataColumnPadding,
     this.allowFilter = false,
@@ -92,6 +94,8 @@ class DataGridView extends StatefulWidget {
   final Alignment headerAlignment;
   final Alignment cellAlignment;
   final EdgeInsets cellPadding;
+  final EdgeInsets headerPadding;
+  final EdgeInsets footerPadding;
   final Map<String, String>? fieldTypes;
 
   final double headerFontSize;
@@ -138,14 +142,16 @@ class _DataGridViewState extends State<DataGridView> {
         sortData = {};
         filterIinfo = {};
       };
-      widget.controller?.generatePdf = ({String fileName = "Report.pdf", double scale = 1.0, String reportHeaderText = "Report"}) {
+      widget.controller?.generatePdf =
+          ({String fileName = "Report.pdf", double scale = 1.0, String reportHeaderText = "Report"}) {
         _generatePDF(fileName: fileName, scale: scale, reportHeaderText: reportHeaderText);
       };
       widget.controller?.generateXls = ({String fileName = "Report.xlsx", String reportHeaderText = "Report"}) {
         _generateXls(fileName: fileName, reportHeaderText: reportHeaderText);
       };
-      widget.controller?.printPreview = ({double scale = 1.0, String reportHeaderText = "Report"}) {
-        _printPreview(scale: scale, reportHeaderText: reportHeaderText);
+      widget.controller?.printPreview =
+          ({double scale = 1.0, String reportHeaderText = "Report", String reportSubHeaderText = ""}) {
+        _printPreview(scale: scale, reportHeaderText: reportHeaderText, reportSubHeaderText: reportSubHeaderText);
       };
     }
     // debugPrint("DataGridView initstate");
@@ -159,20 +165,36 @@ class _DataGridViewState extends State<DataGridView> {
     }
   }
 
-  _generatePDF({String fileName = "Report.pdf", double scale = 1.0, String reportHeaderText = "Report"}) {
-    savePdf(widget, filterdata, reportHeaderText, PdfPageFormat.a4.copyWith(marginLeft: 35, marginTop: 35, marginRight: 35, marginBottom: 35), columnWidths,
-        widget.defaultColumnWidth, fileName, widget.hiddenDataColumns ?? [],
+  _generatePDF(
+      {String fileName = "Report.pdf",
+      double scale = 1.0,
+      String reportHeaderText = "Report",
+      String reportSubHeaderText = ""}) {
+    savePdf(
+        widget,
+        filterdata,
+        reportHeaderText,
+        reportSubHeaderText,
+        PdfPageFormat.a4.copyWith(marginLeft: 20, marginTop: 20, marginRight: 20, marginBottom: 20),
+        columnWidths,
+        widget.defaultColumnWidth,
+        fileName,
+        widget.hiddenDataColumns ?? [],
         scale: scale);
   }
 
-  _printPreview({double scale = 1.0, String reportHeaderText = "Report"}) {
+  _printPreview({double scale = 1.0, String reportHeaderText = "Report", String reportSubHeaderText = ""}) {
     reporttitle = reportHeaderText;
+    reportsubtitle = reportSubHeaderText;
     showPrintPreview = !showPrintPreview;
+    previewScale = scale;
     setState(() {});
   }
 
   String filename = "";
   String reporttitle = "";
+  String reportsubtitle = "";
+  double previewScale = 1.0;
   _generateXls({String fileName = "Report.xlsx", String reportHeaderText = "Report"}) {
     generateExcel(filterdata, fileName, reportHeaderText);
   }
@@ -205,10 +227,12 @@ class _DataGridViewState extends State<DataGridView> {
       return PrintPreviewDataGrid(
         dg: widget,
         reportTitle: reporttitle,
+        reportSubTitle: reportsubtitle,
         filterData: filterdata,
         columnWidths: columnWidths,
         filename: filename,
         isLandscapePreview: widget.isLandscapePreview,
+        scale: previewScale,
         onclose: () {
           showPrintPreview = !showPrintPreview;
           if (widget.onPreviewClose != null) {
@@ -269,8 +293,12 @@ class _DataGridViewState extends State<DataGridView> {
                                                 child: Icon(e.iconData),
                                                 onPressed: () {
                                                   if (e.onCellPressed != null) {
-                                                    e.onCellPressed!(rowIndex, 0,
-                                                        (e.onClickReturnFieldNames ?? []).map((cellname) => filterdata[rowIndex][cellname]).toList());
+                                                    e.onCellPressed!(
+                                                        rowIndex,
+                                                        0,
+                                                        (e.onClickReturnFieldNames ?? [])
+                                                            .map((cellname) => filterdata[rowIndex][cellname])
+                                                            .toList());
                                                   }
                                                 },
                                               ),
@@ -420,7 +448,8 @@ class _DataGridViewState extends State<DataGridView> {
                                           rowIndex: index,
                                           color: widget.rowHeaderColor,
                                           text: (index + 1).toString(),
-                                          cellHeight: (rowHeights[index] ?? widget.defaultRowHeight) + _extraCellPadding,
+                                          cellHeight:
+                                              (rowHeights[index] ?? widget.defaultRowHeight) + _extraCellPadding,
                                           cellWidth: widget.defaultColumnWidth,
                                           onCellPressed: () {},
                                           extraCellheight: _extraCellPadding,
@@ -450,8 +479,14 @@ class _DataGridViewState extends State<DataGridView> {
                                   //Row
                                   width: columnWidths.values.toList().sum +
                                       (columnWidths.values.toList().length * 25) +
-                                      (widget.additonalColumnsLeft ?? []).map((e) => e.columnWidth ?? widget.defaultColumnWidth).toList().sum +
-                                      (widget.additonalColumnsRight ?? []).map((e) => e.columnWidth ?? widget.defaultColumnWidth).toList().sum +
+                                      (widget.additonalColumnsLeft ?? [])
+                                          .map((e) => e.columnWidth ?? widget.defaultColumnWidth)
+                                          .toList()
+                                          .sum +
+                                      (widget.additonalColumnsRight ?? [])
+                                          .map((e) => e.columnWidth ?? widget.defaultColumnWidth)
+                                          .toList()
+                                          .sum +
                                       scrollBarThickness,
                                   child: ScrollConfiguration(
                                     behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
@@ -474,12 +509,17 @@ class _DataGridViewState extends State<DataGridView> {
                                                   text: e.cellText ?? "",
                                                   color: null,
                                                   toolTip: e.toolTip,
-                                                  cellHeight: (rowHeights[rowIndex] ?? widget.defaultRowHeight) + _extraCellPadding,
+                                                  cellHeight: (rowHeights[rowIndex] ?? widget.defaultRowHeight) +
+                                                      _extraCellPadding,
                                                   cellWidth: e.columnWidth ?? widget.defaultColumnWidth,
                                                   onCellPressed: () {
                                                     if (e.onCellPressed != null) {
-                                                      e.onCellPressed!(rowIndex, cellIndec,
-                                                          (e.onClickReturnFieldNames ?? []).map((cellname) => filterdata[rowIndex][cellname]).toList());
+                                                      e.onCellPressed!(
+                                                          rowIndex,
+                                                          cellIndec,
+                                                          (e.onClickReturnFieldNames ?? [])
+                                                              .map((cellname) => filterdata[rowIndex][cellname])
+                                                              .toList());
                                                     }
                                                   },
                                                   columnType: e.columnType,
@@ -489,7 +529,8 @@ class _DataGridViewState extends State<DataGridView> {
                                                     fontSize: widget.cellFontSize,
                                                     color: widget.textColor,
                                                   ),
-                                                  alignment: widget.dataColumnAlignments?[e.columnName ?? ""] ?? widget.cellAlignment,
+                                                  alignment: widget.dataColumnAlignments?[e.columnName ?? ""] ??
+                                                      widget.cellAlignment,
                                                   padding: widget.cellPadding,
                                                 );
                                               }),
@@ -501,7 +542,8 @@ class _DataGridViewState extends State<DataGridView> {
                                                   rowIndex: rowIndex,
                                                   text: filterdata[rowIndex][cellName].toString().trim(),
                                                   color: null,
-                                                  cellHeight: (rowHeights[rowIndex] ?? widget.defaultRowHeight) + _extraCellPadding,
+                                                  cellHeight: (rowHeights[rowIndex] ?? widget.defaultRowHeight) +
+                                                      _extraCellPadding,
                                                   cellWidth: (columnWidths[cellName] ?? widget.defaultColumnWidth) + 25,
                                                   visible: !(widget.hiddenDataColumns ?? []).contains(cellName),
                                                   onCellPressed: () {},
@@ -510,7 +552,8 @@ class _DataGridViewState extends State<DataGridView> {
                                                     fontSize: widget.cellFontSize,
                                                     color: widget.textColor,
                                                   ),
-                                                  alignment: widget.dataColumnAlignments?[cellName] ?? widget.cellAlignment,
+                                                  alignment:
+                                                      widget.dataColumnAlignments?[cellName] ?? widget.cellAlignment,
                                                   padding: widget.cellPadding,
                                                 );
                                               }),
@@ -522,12 +565,17 @@ class _DataGridViewState extends State<DataGridView> {
                                                   text: e.cellText ?? "",
                                                   color: null,
                                                   toolTip: e.toolTip,
-                                                  cellHeight: (rowHeights[rowIndex] ?? widget.defaultRowHeight) + _extraCellPadding,
+                                                  cellHeight: (rowHeights[rowIndex] ?? widget.defaultRowHeight) +
+                                                      _extraCellPadding,
                                                   cellWidth: e.columnWidth ?? widget.defaultColumnWidth,
                                                   onCellPressed: () {
                                                     if (e.onCellPressed != null) {
-                                                      e.onCellPressed!(rowIndex, cellIndec,
-                                                          (e.onClickReturnFieldNames ?? []).map((cellname) => filterdata[rowIndex][cellname]).toList());
+                                                      e.onCellPressed!(
+                                                          rowIndex,
+                                                          cellIndec,
+                                                          (e.onClickReturnFieldNames ?? [])
+                                                              .map((cellname) => filterdata[rowIndex][cellname])
+                                                              .toList());
                                                     }
                                                   },
                                                   columnType: e.columnType,
@@ -537,7 +585,8 @@ class _DataGridViewState extends State<DataGridView> {
                                                     fontSize: widget.cellFontSize,
                                                     color: widget.textColor,
                                                   ),
-                                                  alignment: widget.dataColumnAlignments?[e.columnName ?? ""] ?? widget.cellAlignment,
+                                                  alignment: widget.dataColumnAlignments?[e.columnName ?? ""] ??
+                                                      widget.cellAlignment,
                                                   padding: widget.cellPadding,
                                                 );
                                               }),
@@ -575,7 +624,8 @@ class _DataGridViewState extends State<DataGridView> {
                                   physics: const ClampingScrollPhysics(),
                                   children: List.generate(filterdata.length, (rowIndex) {
                                         return SizedBox(
-                                          height: (rowHeights[rowIndex] ?? widget.defaultRowHeight) + (_extraCellPadding * 2),
+                                          height: (rowHeights[rowIndex] ?? widget.defaultRowHeight) +
+                                              (_extraCellPadding * 2),
                                         );
                                       }) +
                                       [
@@ -630,37 +680,38 @@ class _DataGridViewState extends State<DataGridView> {
                                 : Container(),
                             //Column Footer
                             Expanded(
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: widget.columnHeaderColor,
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                                clipBehavior: Clip.antiAlias,
-                                child: ListView(
-                                  controller: footerScrollController,
-                                  physics: const ClampingScrollPhysics(),
-                                  scrollDirection: Axis.horizontal,
-                                  children: (widget.additonalColumnsLeft ?? [])
-                                          .map(
-                                            (e) => DataGridViewCell(
-                                              rowIndex: -1,
-                                              // color: widget.columnHeaderColor,
-                                              text: "",
-                                              cellWidth: e.columnWidth ?? widget.defaultColumnWidth,
-                                              cellHeight: widget.defaultRowHeight,
-                                              style: TextStyle(
-                                                // fontWeight: FontWeight.bold,
-                                                fontSize: widget.headerFontSize,
-                                                color: widget.headerTextColor ?? widget.textColor,
-                                              ),
-                                              onCellPressed: () {},
-                                              extraCellheight: _extraCellPadding,
-                                              alignment: widget.dataColumnAlignments?[e.columnName ?? ""] ?? widget.cellAlignment,
-                                              padding: widget.cellPadding,
-                                            ),
-                                          )
-                                          .toList() +
-                                      (widget.data.isEmpty
+                              child: SingleChildScrollView(
+                                controller: footerScrollController,
+                                physics: const ClampingScrollPhysics(),
+                                scrollDirection: Axis.horizontal,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: widget.columnHeaderColor,
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  clipBehavior: Clip.antiAlias,
+                                  child: Row(
+                                    children: [
+                                      ...(widget.additonalColumnsLeft ?? []).map(
+                                        (e) => DataGridViewCell(
+                                          rowIndex: -1,
+                                          // color: widget.columnHeaderColor,
+                                          text: "",
+                                          cellWidth: e.columnWidth ?? widget.defaultColumnWidth,
+                                          cellHeight: widget.defaultRowHeight,
+                                          style: TextStyle(
+                                            // fontWeight: FontWeight.bold,
+                                            fontSize: widget.headerFontSize,
+                                            color: widget.headerTextColor ?? widget.textColor,
+                                          ),
+                                          onCellPressed: () {},
+                                          extraCellheight: _extraCellPadding,
+                                          alignment:
+                                              widget.dataColumnAlignments?[e.columnName ?? ""] ?? widget.cellAlignment,
+                                          padding: widget.footerPadding,
+                                        ),
+                                      ),
+                                      ...(widget.data.isEmpty
                                           ? []
                                           : widget.data.first.keys.map(
                                               (fieldname) {
@@ -668,7 +719,8 @@ class _DataGridViewState extends State<DataGridView> {
                                                   rowIndex: -1,
                                                   // color: widget.columnHeaderColor,
                                                   text: ((widget.footerData ?? {})[fieldname] ?? ""),
-                                                  cellWidth: (columnWidths[fieldname] ?? widget.defaultColumnWidth) + 25,
+                                                  cellWidth:
+                                                      (columnWidths[fieldname] ?? widget.defaultColumnWidth) + 25,
                                                   visible: !(widget.hiddenDataColumns ?? []).contains(fieldname),
                                                   cellHeight: widget.defaultRowHeight,
                                                   style: TextStyle(
@@ -678,36 +730,38 @@ class _DataGridViewState extends State<DataGridView> {
                                                   ),
                                                   onCellPressed: () {},
                                                   extraCellheight: _extraCellPadding,
-                                                  alignment: widget.dataColumnAlignments?[fieldname] ?? widget.cellAlignment,
-                                                  padding: widget.cellPadding,
+                                                  alignment:
+                                                      widget.dataColumnAlignments?[fieldname] ?? widget.cellAlignment,
+                                                  padding: widget.footerPadding,
                                                 );
                                               },
-                                            ).toList()) +
-                                      (widget.additonalColumnsRight ?? [])
-                                          .map(
-                                            (e) => DataGridViewCell(
-                                              rowIndex: -1,
-                                              // color: widget.columnHeaderColor,
-                                              text: "",
-                                              cellWidth: e.columnWidth ?? widget.defaultColumnWidth,
-                                              cellHeight: widget.defaultRowHeight,
-                                              style: TextStyle(
-                                                // fontWeight: FontWeight.bold,
-                                                fontSize: widget.headerFontSize,
-                                                color: widget.textColor,
-                                              ),
-                                              onCellPressed: () {},
-                                              extraCellheight: _extraCellPadding,
-                                              alignment: widget.headerAlignment,
-                                              padding: widget.cellPadding,
-                                            ),
-                                          )
-                                          .toList(),
+                                            )),
+                                      ...(widget.additonalColumnsRight ?? []).map(
+                                        (e) => DataGridViewCell(
+                                          rowIndex: -1,
+                                          // color: widget.columnHeaderColor,
+                                          text: "",
+                                          cellWidth: e.columnWidth ?? widget.defaultColumnWidth,
+                                          cellHeight: widget.defaultRowHeight,
+                                          style: TextStyle(
+                                            // fontWeight: FontWeight.bold,
+                                            fontSize: widget.headerFontSize,
+                                            color: widget.textColor,
+                                          ),
+                                          onCellPressed: () {},
+                                          extraCellheight: _extraCellPadding,
+                                          alignment: widget.headerAlignment,
+                                          padding: widget.footerPadding,
+                                        ),
+                                      ),
+                                      SizedBox(width: scrollBarThickness),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
                             //Right hand side scrollbar leave space
-                            SizedBox(width: scrollBarThickness),
+                            // SizedBox(width: scrollBarThickness),
                           ],
                         ),
                       ),
@@ -884,7 +938,9 @@ class _DataGridViewState extends State<DataGridView> {
                   child: const Text("Select None")),
               ElevatedButton(
                   onPressed: () {
-                    filterIinfo[columnName] == null ? filterIinfo.addAll({columnName: selectedValues}) : filterIinfo[columnName] = selectedValues;
+                    filterIinfo[columnName] == null
+                        ? filterIinfo.addAll({columnName: selectedValues})
+                        : filterIinfo[columnName] = selectedValues;
                     Navigator.pop(context, "APPLY");
                   },
                   child: const Text("Apply Filter")),
@@ -903,7 +959,8 @@ class _DataGridViewState extends State<DataGridView> {
   getFiltereData() {
     filterdata = List<Map<String, dynamic>>.from(widget.data);
     for (String colname in filterIinfo.keys) {
-      List<dynamic> unwantedValue = filterIinfo[colname]?.keys.where((element) => filterIinfo[colname]![element] == false).toList() ?? [];
+      List<dynamic> unwantedValue =
+          filterIinfo[colname]?.keys.where((element) => filterIinfo[colname]![element] == false).toList() ?? [];
       filterdata = filterdata.where((element) => !unwantedValue.contains(element[colname])).toList();
     }
   }
@@ -923,9 +980,13 @@ class _DataGridViewState extends State<DataGridView> {
           }
         } else if ((widget.fieldTypes?.containsKey(colName) ?? false) && widget.fieldTypes![colName] == "DATE") {
           if (type == "ASC") {
-            return intl.DateFormat(widget.dateFormat).parse(m1[colName].toString()).compareTo(intl.DateFormat(widget.dateFormat).parse(m2[colName].toString()));
+            return intl.DateFormat(widget.dateFormat)
+                .parse(m1[colName].toString())
+                .compareTo(intl.DateFormat(widget.dateFormat).parse(m2[colName].toString()));
           } else {
-            return intl.DateFormat(widget.dateFormat).parse(m2[colName].toString()).compareTo(intl.DateFormat(widget.dateFormat).parse(m1[colName].toString()));
+            return intl.DateFormat(widget.dateFormat)
+                .parse(m2[colName].toString())
+                .compareTo(intl.DateFormat(widget.dateFormat).parse(m1[colName].toString()));
           }
         } else {
           if (type == "ASC") {

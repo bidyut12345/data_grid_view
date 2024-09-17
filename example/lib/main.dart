@@ -45,9 +45,15 @@ class _MyHomePageState extends State<MyHomePage> {
             Expanded(
               child: DataGridView(
                 data: List.generate(
-                    100, (i) => {for (var v in List.generate(20, (i) => i.toString())) v.toString(): v.toString()}),
+                  10000,
+                  (i) => {
+                    for (var v in List.generate(20, (i) => i.toString()))
+                      v.toString():
+                          "$v whgeruw weurbwuyegruwer weuhrbwuegrwie rwebruwehrwiuehrwe rweubruwehriweuhriwer weurbuwehriweuhrweiurgh",
+                  },
+                ),
               ),
-            )
+            ),
           ],
         ),
       ),

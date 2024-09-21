@@ -5,10 +5,8 @@
 import FlutterMacOS
 import Foundation
 
-import file_selector_macos
-import printing
+import webf
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
-  FileSelectorPlugin.register(with: registry.registrar(forPlugin: "FileSelectorPlugin"))
-  PrintingPlugin.register(with: registry.registrar(forPlugin: "PrintingPlugin"))
+  WebFPlugin.register(with: registry.registrar(forPlugin: "WebFPlugin"))
 }

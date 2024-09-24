@@ -6,6 +6,7 @@ import 'package:data_grid_view/src/data_grid_view_cell.dart';
 import 'package:data_grid_view/src/data_grid_view_column.dart';
 import 'package:data_grid_view/src/data_grid_view_controller.dart';
 import 'package:data_grid_view/src/data_grid_view_header_cells.dart';
+import 'package:data_grid_view/src/data_grid_view_html.dart';
 import 'package:data_grid_view/src/generate_pdf.dart';
 import 'package:data_grid_view/src/generate_rowheight_columnWidth.dart';
 import 'package:data_grid_view/src/generate_xls.dart';
@@ -64,6 +65,7 @@ class DataGridView extends StatefulWidget {
     this.footerData,
     this.isLandscapePreview = false,
     this.onPreviewClose,
+    this.isHtmlView = false,
   }) : super(key: key);
 
   final List<Map<String, dynamic>> data;
@@ -107,6 +109,7 @@ class DataGridView extends StatefulWidget {
   final bool? mobileView;
   final bool isLandscapePreview;
   final Function? onPreviewClose;
+  final bool isHtmlView;
   @override
   State<DataGridView> createState() => _DataGridViewState();
 }
@@ -128,15 +131,16 @@ class _DataGridViewState extends State<DataGridView> {
   void initState() {
     super.initState();
     filterdata = widget.data;
-    verticalMainScrollController = LinkedScrollControllerGroup();
-    horizontalMainScrollController = LinkedScrollControllerGroup();
-    columnHeaderController = verticalMainScrollController.addAndGet();
-    rowsScrollController = verticalMainScrollController.addAndGet();
-    footerScrollController = verticalMainScrollController.addAndGet();
-    firstColumnScrollController = horizontalMainScrollController.addAndGet();
-    restColumnsScrollController = horizontalMainScrollController.addAndGet();
-    lastColumnScrollController = horizontalMainScrollController.addAndGet();
-
+    if (!widget.isHtmlView) {
+      verticalMainScrollController = LinkedScrollControllerGroup();
+      horizontalMainScrollController = LinkedScrollControllerGroup();
+      columnHeaderController = verticalMainScrollController.addAndGet();
+      rowsScrollController = verticalMainScrollController.addAndGet();
+      footerScrollController = verticalMainScrollController.addAndGet();
+      firstColumnScrollController = horizontalMainScrollController.addAndGet();
+      restColumnsScrollController = horizontalMainScrollController.addAndGet();
+      lastColumnScrollController = horizontalMainScrollController.addAndGet();
+    }
     if (widget.controller != null) {
       widget.controller?.resetFilterAndSort = () {
         sortData = {};
@@ -205,12 +209,15 @@ class _DataGridViewState extends State<DataGridView> {
 
   @override
   void dispose() {
-    columnHeaderController.dispose();
-    rowsScrollController.dispose();
-    footerScrollController.dispose();
-    firstColumnScrollController.dispose();
-    restColumnsScrollController.dispose();
-    lastColumnScrollController.dispose();
+    if (!widget.isHtmlView) {
+      columnHeaderController.dispose();
+      rowsScrollController.dispose();
+      footerScrollController.dispose();
+      firstColumnScrollController.dispose();
+      restColumnsScrollController.dispose();
+      lastColumnScrollController.dispose();
+    }
+
     super.dispose();
   }
 
@@ -240,6 +247,12 @@ class _DataGridViewState extends State<DataGridView> {
           }
           setState(() {});
         },
+      );
+    }
+    if (widget.isHtmlView) {
+      return DgWebView(
+        dg: widget,
+        filterdata: filterdata,
       );
     }
     if (isMobileView) {

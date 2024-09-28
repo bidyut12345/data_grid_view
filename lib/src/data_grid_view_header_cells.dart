@@ -24,7 +24,7 @@ List<Widget> headerCells(
                 fontSize: widget.headerFontSize,
                 color: widget.headerTextColor ?? widget.textColor,
               ),
-              onCellPressed: () {},
+              isHeader: true,
               extraCellheight: extraCellPadding,
               alignment: widget.headerAlignment,
               padding: widget.headerPadding,

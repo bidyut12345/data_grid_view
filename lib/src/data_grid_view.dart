@@ -249,7 +249,7 @@ class _DataGridViewState extends State<DataGridView> {
         },
       );
     }
-    if (widget.isHtmlView) {
+    if (widget.isHtmlView && filterdata.isNotEmpty) {
       return DgWebView(
         dg: widget,
         filterdata: filterdata,
@@ -263,10 +263,10 @@ class _DataGridViewState extends State<DataGridView> {
             (row) {
               rowIndex++;
               return Padding(
-                padding: EdgeInsets.all(10),
+                padding: const EdgeInsets.all(10),
                 child: Card(
                   child: Padding(
-                    padding: EdgeInsets.all(10),
+                    padding: const EdgeInsets.all(10),
                     child: Column(
                       children: row.keys.map(
                             (e) {
@@ -280,15 +280,15 @@ class _DataGridViewState extends State<DataGridView> {
                               return Row(
                                 children: [
                                   Expanded(
+                                    flex: 3,
                                     child: Text(
                                       e,
                                       style: TextStyle(fontWeight: FontWeight.bold),
                                     ),
-                                    flex: 3,
                                   ),
                                   Expanded(
-                                    child: Text(str),
                                     flex: 5,
+                                    child: Text(str),
                                   ),
                                 ],
                               );
@@ -367,334 +367,39 @@ class _DataGridViewState extends State<DataGridView> {
             return Stack(
               fit: StackFit.expand,
               children: [
-                Column(
-                  children: [
-                    //Header
-                    SizedBox(
-                      height: headerHeight,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.max,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          //Row Header Column
-                          widget.isRowheader
-                              ? DataGridViewCell(
-                                  rowIndex: -1,
-                                  color: widget.columnHeaderColor,
-                                  text: "",
-                                  cellWidth: widget.defaultRowHeaderWidth,
-                                  cellHeight: headerHeight,
-                                  style: TextStyle(
-                                    // fontWeight: FontWeight.bold,
-                                    fontSize: widget.headerFontSize,
-                                    color: widget.headerTextColor ?? widget.textColor,
-                                  ),
-                                  onCellPressed: () {},
-                                  extraCellheight: _extraCellPadding,
-                                  alignment: widget.headerAlignment,
-                                  padding: widget.cellPadding,
-                                )
-                              : Container(),
-                          //Column Header
-                          Expanded(
-                            child: SingleChildScrollView(
-                              controller: columnHeaderController,
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              scrollDirection: Axis.horizontal,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: widget.columnHeaderColor,
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                                clipBehavior: Clip.antiAlias,
-                                child: Row(
-                                  children: [
-                                    ...headerCells(
-                                      widget,
-                                      _extraCellPadding,
-                                      sortData,
-                                      columnWidths,
-                                      setState,
-                                      showSortingPopupMenu,
-                                      (fieldname) {
-                                        if (sortData.containsKey(fieldname)) {
-                                          if (sortData[fieldname] == "ASC") {
-                                            sortData = {};
-                                            sortData.addAll({fieldname: "DESC"});
-                                          } else {
-                                            sortData = {};
-                                          }
-                                        } else {
-                                          sortData = {};
-                                          sortData.addAll({fieldname: "ASC"});
-                                        }
-                                        setState(() {});
-                                      },
-                                      headerHeight,
-                                    ),
-                                    SizedBox(width: scrollBarThickness),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          //Right hand side scrollbar leave space
-                          // SizedBox(width: scrollBarThickness),
-                        ],
-                      ),
-                    ),
-                    //Rows
-                    Expanded(
-                      child: Row(
-                        children: [
-                          // Row Header
-                          widget.isRowheader
-                              ? SizedBox(
-                                  width: widget.defaultRowHeaderWidth,
-                                  child: ScrollConfiguration(
-                                    behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-                                    child: ListView(
-                                      controller: firstColumnScrollController,
-                                      physics: const AlwaysScrollableScrollPhysics(),
-                                      children: List.generate(filterdata.length, (index) {
-                                        return DataGridViewCell(
-                                          rowIndex: index,
-                                          color: widget.rowHeaderColor,
-                                          text: (index + 1).toString(),
-                                          cellHeight:
-                                              (rowHeights[index] ?? widget.defaultRowHeight) + _extraCellPadding,
-                                          cellWidth: widget.defaultColumnWidth,
-                                          onCellPressed: () {},
-                                          extraCellheight: _extraCellPadding,
-                                          style: TextStyle(
-                                            fontSize: widget.cellFontSize,
-                                            color: widget.textColor,
-                                          ),
-                                          alignment: widget.cellAlignment,
-                                          padding: widget.cellPadding,
-                                        );
-                                      }),
-                                    ),
-                                  ),
-                                )
-                              : Container(),
-                          //Rows main data
-                          Expanded(
-                            child: Scrollbar(
-                              controller: rowsScrollController,
-                              thumbVisibility: isScrollVisible,
-                              thickness: scrollBarThickness,
-                              child: SingleChildScrollView(
-                                controller: rowsScrollController,
-                                scrollDirection: Axis.horizontal,
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                child: SizedBox(
-                                  //Row
-                                  width: columnWidths.values.toList().sum +
-                                      (columnWidths.values.toList().length * 25) +
-                                      (widget.additonalColumnsLeft ?? [])
-                                          .map((e) => e.columnWidth ?? widget.defaultColumnWidth)
-                                          .toList()
-                                          .sum +
-                                      (widget.additonalColumnsRight ?? [])
-                                          .map((e) => e.columnWidth ?? widget.defaultColumnWidth)
-                                          .toList()
-                                          .sum +
-                                      scrollBarThickness,
-                                  child: ScrollConfiguration(
-                                    behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-                                    child: ListView(
-                                      //Cells
-                                      cacheExtent: 5000,
-                                      controller: restColumnsScrollController,
-                                      physics: const AlwaysScrollableScrollPhysics(),
-                                      children: Function.apply(() {
-                                        List<Widget> ll = [];
-                                        ll.addAll(List.generate(filterdata.length, (rowIndex) {
-                                          int cellIndec = -1;
-                                          var rheight =
-                                              (rowHeights[rowIndex] ?? widget.defaultRowHeight) + _extraCellPadding;
-                                          return Row(
-                                            children:
-                                                //Additional Column Left Cells
-                                                [
-                                              ...(widget.additonalColumnsLeft ?? []).map((e) {
-                                                cellIndec++;
-                                                return DataGridViewCell(
-                                                  rowIndex: rowIndex,
-                                                  text: e.cellText == null ? "" : (e.cellText!(rowIndex) ?? ""),
-                                                  color: null,
-                                                  toolTip: e.toolTip,
-                                                  cellHeight: rheight,
-                                                  cellWidth: e.columnWidth ?? widget.defaultColumnWidth,
-                                                  onCellPressed: () {
-                                                    if (e.onCellPressed != null) {
-                                                      e.onCellPressed!(
-                                                          rowIndex,
-                                                          cellIndec,
-                                                          (e.onClickReturnFieldNames ?? [])
-                                                              .map((cellname) => filterdata[rowIndex][cellname])
-                                                              .toList());
-                                                    }
-                                                  },
-                                                  columnType: e.columnType,
-                                                  iconData: e.iconData,
-                                                  extraCellheight: _extraCellPadding,
-                                                  style: TextStyle(
-                                                    fontSize: widget.cellFontSize,
-                                                    color: widget.textColor,
-                                                  ),
-                                                  alignment: widget.dataColumnAlignments?[e.columnName ?? ""] ??
-                                                      widget.cellAlignment,
-                                                  padding: widget.cellPadding,
-                                                );
-                                              }),
-                                              //Main Cells
-                                              ...List.generate(filterdata.first.keys.length, (cellIndex) {
-                                                cellIndec++;
-                                                String cellName = filterdata.first.keys.toList()[cellIndex].toString();
-                                                return DataGridViewCell(
-                                                  rowIndex: rowIndex,
-                                                  text: filterdata[rowIndex][cellName].toString().trim(),
-                                                  color: null,
-                                                  cellHeight: rheight,
-                                                  cellWidth: (columnWidths[cellName] ?? widget.defaultColumnWidth) + 25,
-                                                  visible: !(widget.hiddenDataColumns ?? []).contains(cellName),
-                                                  onCellPressed: () {},
-                                                  extraCellheight: _extraCellPadding,
-                                                  style: TextStyle(
-                                                    fontSize: widget.cellFontSize,
-                                                    color: widget.textColor,
-                                                  ),
-                                                  alignment:
-                                                      widget.dataColumnAlignments?[cellName] ?? widget.cellAlignment,
-                                                  padding: widget.cellPadding,
-                                                );
-                                              }),
-                                              //Additional Columns Right Cells
-                                              ...(widget.additonalColumnsRight ?? []).map((e) {
-                                                cellIndec++;
-                                                return DataGridViewCell(
-                                                  rowIndex: rowIndex,
-                                                  text: e.cellText == null ? "" : (e.cellText!(rowIndex) ?? ""),
-                                                  color: null,
-                                                  toolTip: e.toolTip,
-                                                  cellHeight: rheight,
-                                                  cellWidth: e.columnWidth ?? widget.defaultColumnWidth,
-                                                  onCellPressed: () {
-                                                    if (e.onCellPressed != null) {
-                                                      e.onCellPressed!(
-                                                          rowIndex,
-                                                          cellIndec,
-                                                          (e.onClickReturnFieldNames ?? [])
-                                                              .map((cellname) => filterdata[rowIndex][cellname])
-                                                              .toList());
-                                                    }
-                                                  },
-                                                  columnType: e.columnType,
-                                                  iconData: e.iconData,
-                                                  extraCellheight: _extraCellPadding,
-                                                  style: TextStyle(
-                                                    fontSize: widget.cellFontSize,
-                                                    color: widget.textColor,
-                                                  ),
-                                                  alignment: widget.dataColumnAlignments?[e.columnName ?? ""] ??
-                                                      widget.cellAlignment,
-                                                  padding: widget.cellPadding,
-                                                );
-                                              }),
-
-                                              //Right hand side scrollbar leave space
-                                            ],
-                                          );
-                                        }));
-                                        //Last Row
-                                        ll.add(Container(
-                                          // color: Colors.red,
-                                          width: columnWidths.values.toList().sum + scrollBarThickness,
-                                          height: scrollBarThickness + 3,
-                                        ));
-                                        return ll;
-                                      }, null),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-
-                          Container(
-                            // color: Colors.green,
-                            width: scrollBarThickness + 3,
-                            child: Scrollbar(
-                              controller: lastColumnScrollController,
-                              thumbVisibility: isScrollVisible,
-                              thickness: scrollBarThickness,
-                              child: ScrollConfiguration(
-                                behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-                                child: ListView(
-                                  controller: lastColumnScrollController,
-                                  physics: const AlwaysScrollableScrollPhysics(),
-                                  children: List.generate(filterdata.length, (rowIndex) {
-                                        return SizedBox(
-                                          height: (rowHeights[rowIndex] ?? widget.defaultRowHeight) +
-                                              (_extraCellPadding * 2),
-                                        );
-                                      }) +
-                                      [
-                                        SizedBox(
-                                          width: scrollBarThickness,
-                                          height: scrollBarThickness + 3,
-                                        )
-                                      ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      // DataGridViewBody(
-                      //   scrollController: _bodyController,
-                      //   cellWidth: widget.defaultColumnWidth,
-                      //   cellHeight: widget.defaultRowHeight,
-                      //   defaultRowHeaderWidth: widget.defaultRowHeaderWidth,
-                      //   autoGenerateColumns: widget.autoGenerateColumns,
-                      //   columns: widget.columns,
-                      //   data: filterdata,
-                      //   isRowHeader: widget.isRowheader,
-                      // ),
-                    ),
-                    //Footer
-                    if (widget.isFooter)
+                if (filterdata.isNotEmpty)
+                  Column(
+                    children: [
+                      //Header
                       SizedBox(
-                        height: widget.defaultRowHeight + 10,
+                        height: headerHeight,
                         child: Row(
                           mainAxisSize: MainAxisSize.max,
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            //Row Header Column Footer
+                            //Row Header Column
                             widget.isRowheader
                                 ? DataGridViewCell(
                                     rowIndex: -1,
                                     color: widget.columnHeaderColor,
                                     text: "",
                                     cellWidth: widget.defaultRowHeaderWidth,
-                                    cellHeight: widget.defaultRowHeight,
+                                    cellHeight: headerHeight,
                                     style: TextStyle(
                                       // fontWeight: FontWeight.bold,
                                       fontSize: widget.headerFontSize,
                                       color: widget.headerTextColor ?? widget.textColor,
                                     ),
-                                    onCellPressed: () {},
                                     extraCellheight: _extraCellPadding,
-                                    alignment: widget.cellAlignment,
+                                    alignment: widget.headerAlignment,
                                     padding: widget.cellPadding,
+                                    isHeader: true,
                                   )
                                 : Container(),
-                            //Column Footer
+                            //Column Header
                             Expanded(
                               child: SingleChildScrollView(
-                                controller: footerScrollController,
+                                controller: columnHeaderController,
                                 physics: const AlwaysScrollableScrollPhysics(),
                                 scrollDirection: Axis.horizontal,
                                 child: Container(
@@ -705,67 +410,28 @@ class _DataGridViewState extends State<DataGridView> {
                                   clipBehavior: Clip.antiAlias,
                                   child: Row(
                                     children: [
-                                      ...(widget.additonalColumnsLeft ?? []).map(
-                                        (e) => DataGridViewCell(
-                                          rowIndex: -1,
-                                          // color: widget.columnHeaderColor,
-                                          text: "",
-                                          cellWidth: e.columnWidth ?? widget.defaultColumnWidth,
-                                          cellHeight: widget.defaultRowHeight,
-                                          style: TextStyle(
-                                            // fontWeight: FontWeight.bold,
-                                            fontSize: widget.headerFontSize,
-                                            color: widget.headerTextColor ?? widget.textColor,
-                                          ),
-                                          onCellPressed: () {},
-                                          extraCellheight: _extraCellPadding,
-                                          alignment:
-                                              widget.dataColumnAlignments?[e.columnName ?? ""] ?? widget.cellAlignment,
-                                          padding: widget.footerPadding,
-                                        ),
-                                      ),
-                                      ...(widget.data.isEmpty
-                                          ? []
-                                          : widget.data.first.keys.map(
-                                              (fieldname) {
-                                                return DataGridViewCell(
-                                                  rowIndex: -1,
-                                                  // color: widget.columnHeaderColor,
-                                                  text: ((widget.footerData ?? {})[fieldname] ?? ""),
-                                                  cellWidth:
-                                                      (columnWidths[fieldname] ?? widget.defaultColumnWidth) + 25,
-                                                  visible: !(widget.hiddenDataColumns ?? []).contains(fieldname),
-                                                  cellHeight: widget.defaultRowHeight,
-                                                  style: TextStyle(
-                                                    // fontWeight: FontWeight.bold,
-                                                    fontSize: widget.headerFontSize,
-                                                    color: widget.headerTextColor ?? widget.textColor,
-                                                  ),
-                                                  onCellPressed: () {},
-                                                  extraCellheight: _extraCellPadding,
-                                                  alignment:
-                                                      widget.dataColumnAlignments?[fieldname] ?? widget.cellAlignment,
-                                                  padding: widget.footerPadding,
-                                                );
-                                              },
-                                            )),
-                                      ...(widget.additonalColumnsRight ?? []).map(
-                                        (e) => DataGridViewCell(
-                                          rowIndex: -1,
-                                          // color: widget.columnHeaderColor,
-                                          text: "",
-                                          cellWidth: e.columnWidth ?? widget.defaultColumnWidth,
-                                          cellHeight: widget.defaultRowHeight,
-                                          style: TextStyle(
-                                            // fontWeight: FontWeight.bold,
-                                            fontSize: widget.headerFontSize,
-                                            color: widget.textColor,
-                                          ),
-                                          onCellPressed: () {},
-                                          extraCellheight: _extraCellPadding,
-                                          alignment: widget.headerAlignment,
-                                          padding: widget.footerPadding,
-                                        ),
+                                      ...headerCells(
+                                        widget,
+                                        _extraCellPadding,
+                                        sortData,
+                                        columnWidths,
+                                        setState,
+                                        showSortingPopupMenu,
+                                        (fieldname) {
+                                          if (sortData.containsKey(fieldname)) {
+                                            if (sortData[fieldname] == "ASC") {
+                                              sortData = {};
+                                              sortData.addAll({fieldname: "DESC"});
+                                            } else {
+                                              sortData = {};
+                                            }
+                                          } else {
+                                            sortData = {};
+                                            sortData.addAll({fieldname: "ASC"});
+                                          }
+                                          setState(() {});
+                                        },
+                                        headerHeight,
                                       ),
                                       SizedBox(width: scrollBarThickness),
                                     ],
@@ -778,8 +444,344 @@ class _DataGridViewState extends State<DataGridView> {
                           ],
                         ),
                       ),
-                  ],
-                ),
+                      //Rows
+                      Expanded(
+                        child: Row(
+                          children: [
+                            // Row Header
+                            widget.isRowheader
+                                ? SizedBox(
+                                    width: widget.defaultRowHeaderWidth,
+                                    child: ScrollConfiguration(
+                                      behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+                                      child: ListView(
+                                        controller: firstColumnScrollController,
+                                        physics: const AlwaysScrollableScrollPhysics(),
+                                        children: List.generate(filterdata.length, (index) {
+                                          return DataGridViewCell(
+                                            rowIndex: index,
+                                            color: widget.rowHeaderColor,
+                                            text: (index + 1).toString(),
+                                            cellHeight:
+                                                (rowHeights[index] ?? widget.defaultRowHeight) + _extraCellPadding,
+                                            cellWidth: widget.defaultColumnWidth,
+                                            isHeader: true,
+                                            extraCellheight: _extraCellPadding,
+                                            style: TextStyle(
+                                              fontSize: widget.cellFontSize,
+                                              color: widget.textColor,
+                                            ),
+                                            alignment: widget.cellAlignment,
+                                            padding: widget.cellPadding,
+                                          );
+                                        }),
+                                      ),
+                                    ),
+                                  )
+                                : Container(),
+                            //Rows main data
+                            Expanded(
+                              child: Scrollbar(
+                                controller: rowsScrollController,
+                                thumbVisibility: isScrollVisible,
+                                thickness: scrollBarThickness,
+                                child: SingleChildScrollView(
+                                  controller: rowsScrollController,
+                                  scrollDirection: Axis.horizontal,
+                                  physics: const AlwaysScrollableScrollPhysics(),
+                                  child: SizedBox(
+                                    //Row
+                                    width: columnWidths.values.toList().sum +
+                                        (columnWidths.values.toList().length * 25) +
+                                        (widget.additonalColumnsLeft ?? [])
+                                            .map((e) => e.columnWidth ?? widget.defaultColumnWidth)
+                                            .toList()
+                                            .sum +
+                                        (widget.additonalColumnsRight ?? [])
+                                            .map((e) => e.columnWidth ?? widget.defaultColumnWidth)
+                                            .toList()
+                                            .sum +
+                                        scrollBarThickness,
+                                    child: ScrollConfiguration(
+                                      behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+                                      child: ListView(
+                                        //Cells
+                                        cacheExtent: 5000,
+                                        controller: restColumnsScrollController,
+                                        physics: const AlwaysScrollableScrollPhysics(),
+                                        children: Function.apply(() {
+                                          List<Widget> ll = [];
+                                          ll.addAll(List.generate(filterdata.length, (rowIndex) {
+                                            int cellIndec = -1;
+                                            var rheight =
+                                                (rowHeights[rowIndex] ?? widget.defaultRowHeight) + _extraCellPadding;
+                                            return Row(
+                                              children:
+                                                  //Additional Column Left Cells
+                                                  [
+                                                ...(widget.additonalColumnsLeft ?? []).map((e) {
+                                                  cellIndec++;
+                                                  return DataGridViewCell(
+                                                    rowIndex: rowIndex,
+                                                    text: e.cellText == null ? "" : (e.cellText!(rowIndex) ?? ""),
+                                                    color: null,
+                                                    toolTip: e.toolTip,
+                                                    cellHeight: rheight,
+                                                    cellWidth: e.columnWidth ?? widget.defaultColumnWidth,
+                                                    onCellPressed: e.onCellPressed == null
+                                                        ? null
+                                                        : () {
+                                                            if (e.onCellPressed != null) {
+                                                              e.onCellPressed!(
+                                                                  rowIndex,
+                                                                  cellIndec,
+                                                                  (e.onClickReturnFieldNames ?? [])
+                                                                      .map((cellname) => filterdata[rowIndex][cellname])
+                                                                      .toList());
+                                                            }
+                                                          },
+                                                    columnType: e.columnType,
+                                                    iconData: e.iconData,
+                                                    extraCellheight: _extraCellPadding,
+                                                    style: TextStyle(
+                                                      fontSize: widget.cellFontSize,
+                                                      color: widget.textColor,
+                                                    ),
+                                                    alignment: widget.dataColumnAlignments?[e.columnName ?? ""] ??
+                                                        widget.cellAlignment,
+                                                    padding: widget.cellPadding,
+                                                  );
+                                                }),
+                                                //Main Cells
+                                                ...List.generate(filterdata.first.keys.length, (cellIndex) {
+                                                  cellIndec++;
+                                                  String cellName =
+                                                      filterdata.first.keys.toList()[cellIndex].toString();
+                                                  return DataGridViewCell(
+                                                    rowIndex: rowIndex,
+                                                    text: filterdata[rowIndex][cellName].toString().trim(),
+                                                    color: null,
+                                                    cellHeight: rheight,
+                                                    cellWidth:
+                                                        (columnWidths[cellName] ?? widget.defaultColumnWidth) + 25,
+                                                    visible: !(widget.hiddenDataColumns ?? []).contains(cellName),
+                                                    extraCellheight: _extraCellPadding,
+                                                    style: TextStyle(
+                                                      fontSize: widget.cellFontSize,
+                                                      color: widget.textColor,
+                                                    ),
+                                                    alignment:
+                                                        widget.dataColumnAlignments?[cellName] ?? widget.cellAlignment,
+                                                    padding: widget.cellPadding,
+                                                  );
+                                                }),
+                                                //Additional Columns Right Cells
+                                                ...(widget.additonalColumnsRight ?? []).map((e) {
+                                                  cellIndec++;
+                                                  return DataGridViewCell(
+                                                    rowIndex: rowIndex,
+                                                    text: e.cellText == null ? "" : (e.cellText!(rowIndex) ?? ""),
+                                                    color: null,
+                                                    toolTip: e.toolTip,
+                                                    cellHeight: rheight,
+                                                    cellWidth: e.columnWidth ?? widget.defaultColumnWidth,
+                                                    onCellPressed: e.onCellPressed == null
+                                                        ? null
+                                                        : () {
+                                                            if (e.onCellPressed != null) {
+                                                              e.onCellPressed!(
+                                                                  rowIndex,
+                                                                  cellIndec,
+                                                                  (e.onClickReturnFieldNames ?? [])
+                                                                      .map((cellname) => filterdata[rowIndex][cellname])
+                                                                      .toList());
+                                                            }
+                                                          },
+                                                    columnType: e.columnType,
+                                                    iconData: e.iconData,
+                                                    extraCellheight: _extraCellPadding,
+                                                    style: TextStyle(
+                                                      fontSize: widget.cellFontSize,
+                                                      color: widget.textColor,
+                                                    ),
+                                                    alignment: widget.dataColumnAlignments?[e.columnName ?? ""] ??
+                                                        widget.cellAlignment,
+                                                    padding: widget.cellPadding,
+                                                  );
+                                                }),
+
+                                                //Right hand side scrollbar leave space
+                                              ],
+                                            );
+                                          }));
+                                          //Last Row
+                                          ll.add(Container(
+                                            // color: Colors.red,
+                                            width: columnWidths.values.toList().sum + scrollBarThickness,
+                                            height: scrollBarThickness + 3,
+                                          ));
+                                          return ll;
+                                        }, null),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            Container(
+                              // color: Colors.green,
+                              width: scrollBarThickness + 3,
+                              child: Scrollbar(
+                                controller: lastColumnScrollController,
+                                thumbVisibility: isScrollVisible,
+                                thickness: scrollBarThickness,
+                                child: ScrollConfiguration(
+                                  behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+                                  child: ListView(
+                                    controller: lastColumnScrollController,
+                                    physics: const AlwaysScrollableScrollPhysics(),
+                                    children: List.generate(filterdata.length, (rowIndex) {
+                                          return SizedBox(
+                                            height: (rowHeights[rowIndex] ?? widget.defaultRowHeight) +
+                                                (_extraCellPadding * 2),
+                                          );
+                                        }) +
+                                        [
+                                          SizedBox(
+                                            width: scrollBarThickness,
+                                            height: scrollBarThickness + 3,
+                                          )
+                                        ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        // DataGridViewBody(
+                        //   scrollController: _bodyController,
+                        //   cellWidth: widget.defaultColumnWidth,
+                        //   cellHeight: widget.defaultRowHeight,
+                        //   defaultRowHeaderWidth: widget.defaultRowHeaderWidth,
+                        //   autoGenerateColumns: widget.autoGenerateColumns,
+                        //   columns: widget.columns,
+                        //   data: filterdata,
+                        //   isRowHeader: widget.isRowheader,
+                        // ),
+                      ),
+                      //Footer
+                      if (widget.isFooter)
+                        SizedBox(
+                          height: widget.defaultRowHeight + 10,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.max,
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              //Row Header Column Footer
+                              widget.isRowheader
+                                  ? DataGridViewCell(
+                                      rowIndex: -1,
+                                      color: widget.columnHeaderColor,
+                                      text: "",
+                                      cellWidth: widget.defaultRowHeaderWidth,
+                                      cellHeight: widget.defaultRowHeight,
+                                      style: TextStyle(
+                                        // fontWeight: FontWeight.bold,
+                                        fontSize: widget.headerFontSize,
+                                        color: widget.headerTextColor ?? widget.textColor,
+                                      ),
+                                      extraCellheight: _extraCellPadding,
+                                      alignment: widget.cellAlignment,
+                                      padding: widget.cellPadding,
+                                    )
+                                  : Container(),
+                              //Column Footer
+                              Expanded(
+                                child: SingleChildScrollView(
+                                  controller: footerScrollController,
+                                  physics: const AlwaysScrollableScrollPhysics(),
+                                  scrollDirection: Axis.horizontal,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: widget.columnHeaderColor,
+                                      borderRadius: BorderRadius.circular(5),
+                                    ),
+                                    clipBehavior: Clip.antiAlias,
+                                    child: Row(
+                                      children: [
+                                        ...(widget.additonalColumnsLeft ?? []).map(
+                                          (e) => DataGridViewCell(
+                                            rowIndex: -1,
+                                            // color: widget.columnHeaderColor,
+                                            text: "",
+                                            cellWidth: e.columnWidth ?? widget.defaultColumnWidth,
+                                            cellHeight: widget.defaultRowHeight,
+                                            style: TextStyle(
+                                              // fontWeight: FontWeight.bold,
+                                              fontSize: widget.headerFontSize,
+                                              color: widget.headerTextColor ?? widget.textColor,
+                                            ),
+                                            extraCellheight: _extraCellPadding,
+                                            alignment: widget.dataColumnAlignments?[e.columnName ?? ""] ??
+                                                widget.cellAlignment,
+                                            padding: widget.footerPadding,
+                                          ),
+                                        ),
+                                        ...(widget.data.isEmpty
+                                            ? []
+                                            : widget.data.first.keys.map(
+                                                (fieldname) {
+                                                  return DataGridViewCell(
+                                                    rowIndex: -1,
+                                                    // color: widget.columnHeaderColor,
+                                                    text: ((widget.footerData ?? {})[fieldname] ?? ""),
+                                                    cellWidth:
+                                                        (columnWidths[fieldname] ?? widget.defaultColumnWidth) + 25,
+                                                    visible: !(widget.hiddenDataColumns ?? []).contains(fieldname),
+                                                    cellHeight: widget.defaultRowHeight,
+                                                    style: TextStyle(
+                                                      // fontWeight: FontWeight.bold,
+                                                      fontSize: widget.headerFontSize,
+                                                      color: widget.headerTextColor ?? widget.textColor,
+                                                    ),
+                                                    extraCellheight: _extraCellPadding,
+                                                    alignment:
+                                                        widget.dataColumnAlignments?[fieldname] ?? widget.cellAlignment,
+                                                    padding: widget.footerPadding,
+                                                  );
+                                                },
+                                              )),
+                                        ...(widget.additonalColumnsRight ?? []).map(
+                                          (e) => DataGridViewCell(
+                                            rowIndex: -1,
+                                            // color: widget.columnHeaderColor,
+                                            text: "",
+                                            cellWidth: e.columnWidth ?? widget.defaultColumnWidth,
+                                            cellHeight: widget.defaultRowHeight,
+                                            style: TextStyle(
+                                              // fontWeight: FontWeight.bold,
+                                              fontSize: widget.headerFontSize,
+                                              color: widget.textColor,
+                                            ),
+                                            extraCellheight: _extraCellPadding,
+                                            alignment: widget.headerAlignment,
+                                            padding: widget.footerPadding,
+                                          ),
+                                        ),
+                                        SizedBox(width: scrollBarThickness),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              //Right hand side scrollbar leave space
+                              // SizedBox(width: scrollBarThickness),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
                 // Align(
                 //     alignment: Alignment.topLeft,
                 //     child: Text(

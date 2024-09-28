@@ -126,6 +126,9 @@ class _DgWebViewState extends State<DgWebView> {
   }
 
   String getHtmlFile(String zoom) {
+    if (widget.filterdata.isEmpty) {
+      return "<b> Nothing found </b>";
+    }
     var str = """
 <html>
 <head>
@@ -136,6 +139,10 @@ function SM(val)
 } 
 </script>
 <style>
+body{
+    margin:0px;
+    padding:0px;
+}
 .btn:not(:disabled):not(.disabled) {
     cursor: pointer;
 }
@@ -180,18 +187,20 @@ td button {
 thead th {
     background-color: #212529;
     position:sticky;
-    top: 0px;
+    top: -1px;
+    margin-top:-1px;
 }
 .table-dark.table-striped tbody tr:nth-of-type(odd) {
     background-color: rgba(255, 255, 255, .05);
 }
 .table-dark td, .table-dark th, .table-dark thead th {
-    border-color: #32383e;
+    border-color: #32383e!important;
 } 
 .table thead th {
     vertical-align: bottom;
     border-bottom: 0.5px solid #dee2e6;
 }
+ 
 
  
 .table td, .table th {
@@ -202,17 +211,35 @@ thead th {
 th {
     text-align: inherit; 
 }
+.th
+{
+  display:flex;
+  width:100%;
+}
+.th div:first-child
+{
+  flex:1; 
+}
+.th div:last-child
+{ 
+  width:20px; 
+}
 </style>
 </head>
 """;
     str += '<body style="margin:0px;zoom:$zoom%;"><table class="table table-striped table-dark">';
-    str +=
-        '<thead class="thead-dark"><tr>${widget.filterdata.first.keys.map((e) => "<th>$e</th>").join()}</tr></thead>';
+    str += '<thead class="thead-dark"><tr>';
+    str += widget.filterdata.first.keys
+        .map((e) => (widget.dg.hiddenDataColumns ?? []).contains(e)
+            ? ""
+            : "<th><div class='th'><div>${widget.dg.dataColumnHeadertexts?[e] ?? e}</div><div></div></div></th>")
+        .join();
+    str += '</tr></thead>';
     str += '<tbody>';
     //index1 == 0 ? "<td><button onclick='SM(\"$rowIndex,$index1\");' >Load</button></td>" :
     str += widget.filterdata
         .mapIndexed((rowIndex, row) =>
-            """<tr>${row.keys.mapIndexed((cellIndex, fieldName) => "<td>${row[fieldName]}</td>").join()}</tr>""")
+            """<tr>${row.keys.mapIndexed((cellIndex, fieldName) => (widget.dg.hiddenDataColumns ?? []).contains(fieldName) ? "" : "<td>${row[fieldName]}</td>").join()}</tr>""")
         .join();
     str += '</tbody>';
     str += '</table>';

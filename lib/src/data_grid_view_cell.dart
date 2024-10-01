@@ -1,6 +1,7 @@
 import 'package:data_grid_view/src/data_grid_view_column.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 
 class DataGridViewCell extends StatelessWidget {
   final String text;
@@ -44,14 +45,16 @@ class DataGridViewCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var text1 = text == "null" ? "" : text;
     return Container(
       color: color,
       child: !visible
           ? Container()
           : Container(
               width: cellWidth,
-              height: cellHeight + extraCellheight,
+              height: cellHeight,
               decoration: BoxDecoration(
+                // color: Colors.red,
                 color: rowIndex >= 0 && rowIndex % 2 == 1
                     ? const Color.fromARGB(255, 129, 129, 129).withOpacity(0.07)
                     : null,
@@ -67,17 +70,57 @@ class DataGridViewCell extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Expanded(
-                        child: columnType == ColumnType.textColumn
-                            ? Container(
-                                // style: ButtonStyle(
-                                //   padding: MaterialStateProperty.all(const EdgeInsets.all(2)),
-                                //   shape: MaterialStateProperty.all(
-                                //       RoundedRectangleBorder(borderRadius: BorderRadius.circular(0))),
-                                // ),
-                                // onPressed: () {
-                                //   onCellPressed();
-                                // },
+                      if (columnType == ColumnType.textColumn && text1.isNotEmpty)
+                        Expanded(
+                          child: Container(
+                            // style: ButtonStyle(
+                            //   padding: MaterialStateProperty.all(const EdgeInsets.all(2)),
+                            //   shape: MaterialStateProperty.all(
+                            //       RoundedRectangleBorder(borderRadius: BorderRadius.circular(0))),
+                            // ),
+                            // onPressed: () {
+                            //   onCellPressed();
+                            // },
+                            child: Align(
+                              alignment: alignment,
+                              child: Padding(
+                                padding: padding,
+                                child: Tooltip(
+                                  message: toolTip ?? "",
+                                  child: Text(
+                                    text1,
+                                    style: style ??
+                                        const TextStyle(
+                                          fontSize: 14.0,
+                                          color: Color.fromARGB(255, 39, 39, 39),
+                                        ),
+                                    textAlign: ([Alignment.bottomCenter, Alignment.topCenter, Alignment.center]
+                                            .contains(alignment))
+                                        ? TextAlign.center
+                                        : ([Alignment.topLeft, Alignment.bottomLeft, Alignment.centerLeft]
+                                                .contains(alignment))
+                                            ? TextAlign.left
+                                            : TextAlign.right,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      if (columnType == ColumnType.elevatedButtonColumn && text1.isNotEmpty)
+                        Expanded(
+                          child: Padding(
+                              padding: const EdgeInsets.all(2.0),
+                              child: ElevatedButton(
+                                style: ButtonStyle(
+                                  backgroundColor: MaterialStateProperty.all(Colors.grey.withOpacity(0.5)),
+                                  padding: MaterialStateProperty.all(const EdgeInsets.all(2)),
+                                  shape: MaterialStateProperty.all(
+                                      RoundedRectangleBorder(borderRadius: BorderRadius.circular(3))),
+                                ),
+                                onPressed: () {
+                                  if (onCellPressed != null) onCellPressed!();
+                                },
                                 child: Align(
                                   alignment: alignment,
                                   child: Padding(
@@ -86,11 +129,7 @@ class DataGridViewCell extends StatelessWidget {
                                       message: toolTip ?? "",
                                       child: Text(
                                         text == "null" ? "" : text,
-                                        style: style ??
-                                            const TextStyle(
-                                              fontSize: 14.0,
-                                              color: Color.fromARGB(255, 39, 39, 39),
-                                            ),
+                                        style: style ?? const TextStyle(fontSize: 16.0, color: Colors.black),
                                         textAlign: ([Alignment.bottomCenter, Alignment.topCenter, Alignment.center]
                                                 .contains(alignment))
                                             ? TextAlign.center
@@ -102,57 +141,27 @@ class DataGridViewCell extends StatelessWidget {
                                     ),
                                   ),
                                 ),
-                              )
-                            : columnType == ColumnType.elevatedButtonColumn
-                                ? Padding(
-                                    padding: const EdgeInsets.all(0.0),
-                                    child: TextButton(
-                                      style: ButtonStyle(
-                                        padding: MaterialStateProperty.all(EdgeInsets.all(2)),
-                                        shape: MaterialStateProperty.all(
-                                            RoundedRectangleBorder(borderRadius: BorderRadius.circular(0))),
-                                      ),
-                                      onPressed: () {
-                                        if (onCellPressed != null) onCellPressed!();
-                                      },
-                                      child: Align(
-                                        alignment: alignment,
-                                        child: Padding(
-                                          padding: padding,
-                                          child: Tooltip(
-                                            message: toolTip ?? "",
-                                            child: Text(
-                                              text == "null" ? "" : text,
-                                              style: style ?? const TextStyle(fontSize: 16.0, color: Colors.black),
-                                              textAlign: ([
-                                                Alignment.bottomCenter,
-                                                Alignment.topCenter,
-                                                Alignment.center
-                                              ].contains(alignment))
-                                                  ? TextAlign.center
-                                                  : ([Alignment.topLeft, Alignment.bottomLeft, Alignment.centerLeft]
-                                                          .contains(alignment))
-                                                      ? TextAlign.left
-                                                      : TextAlign.right,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ))
-                                : Tooltip(
-                                    message: toolTip ?? "",
-                                    child: IconButton(
-                                      icon: Icon(
-                                        iconData ?? Icons.error,
-                                        size: 18,
-                                      ),
-                                      padding: const EdgeInsets.all(2),
-                                      onPressed: () {
-                                        if (onCellPressed != null) onCellPressed!();
-                                      },
-                                    ),
-                                  ),
-                      ),
+                              )),
+                        ),
+                      if (columnType == ColumnType.iconButtonColumn)
+                        Expanded(
+                          child: Tooltip(
+                            message: toolTip ?? "",
+                            child: Padding(
+                              padding: const EdgeInsets.all(2.0),
+                              child: IconButton(
+                                icon: Icon(
+                                  iconData ?? Icons.error,
+                                  size: 18,
+                                ),
+                                padding: const EdgeInsets.all(2),
+                                onPressed: () {
+                                  if (onCellPressed != null) onCellPressed!();
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
                       if (trailing != null) trailing!,
                     ],
                   ),

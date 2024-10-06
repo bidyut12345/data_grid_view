@@ -489,7 +489,7 @@ class _DataGridViewState extends State<DataGridView> {
                                                 fontSize: widget.cellFontSize,
                                                 color: widget.textColor,
                                               ),
-                                              alignment: widget.cellAlignment,
+                                              alignment: Alignment.center,
                                               padding: widget.cellPadding,
                                             );
                                           }),

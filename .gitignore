@@ -27,3 +27,13 @@
 .dart_tool/
 .packages
 build/
+/example/macos/Flutter/Flutter-Release.xcconfig
+/example/macos/Flutter/Flutter-Debug.xcconfig
+/example/macos/Podfile
+/example/ios/Flutter/Release.xcconfig
+/example/ios/Flutter/Debug.xcconfig
+/example/ios/Podfile
+/example/.flutter-plugins-dependencies
+/example/.flutter-plugins
+/.flutter-plugins-dependencies
+/.flutter-plugins

@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 
 class DataGridViewCell extends StatelessWidget {
   final String text;
+  final Widget? textChild;
   final String? toolTip;
   final Color? color;
   final double cellWidth;
@@ -25,6 +26,7 @@ class DataGridViewCell extends StatelessWidget {
   const DataGridViewCell({
     Key? key,
     required this.text,
+    this.textChild,
     this.toolTip,
     this.color,
     required this.cellWidth,
@@ -70,7 +72,7 @@ class DataGridViewCell extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      if (columnType == ColumnType.textColumn && text1.isNotEmpty)
+                      if (columnType == ColumnType.textColumn && (text1.isNotEmpty || textChild != null))
                         Expanded(
                           child: Container(
                             // style: ButtonStyle(
@@ -87,27 +89,29 @@ class DataGridViewCell extends StatelessWidget {
                                 padding: padding,
                                 child: Tooltip(
                                   message: toolTip ?? "",
-                                  child: Text(
-                                    text1,
-                                    style: style ??
-                                        const TextStyle(
-                                          fontSize: 14.0,
-                                          color: Color.fromARGB(255, 39, 39, 39),
+                                  child: text1.isEmpty && textChild != null
+                                      ? textChild
+                                      : Text(
+                                          text1,
+                                          style: style ??
+                                              const TextStyle(
+                                                fontSize: 14.0,
+                                                color: Color.fromARGB(255, 39, 39, 39),
+                                              ),
+                                          textAlign: ([Alignment.bottomCenter, Alignment.topCenter, Alignment.center]
+                                                  .contains(alignment))
+                                              ? TextAlign.center
+                                              : ([Alignment.topLeft, Alignment.bottomLeft, Alignment.centerLeft]
+                                                      .contains(alignment))
+                                                  ? TextAlign.left
+                                                  : TextAlign.right,
                                         ),
-                                    textAlign: ([Alignment.bottomCenter, Alignment.topCenter, Alignment.center]
-                                            .contains(alignment))
-                                        ? TextAlign.center
-                                        : ([Alignment.topLeft, Alignment.bottomLeft, Alignment.centerLeft]
-                                                .contains(alignment))
-                                            ? TextAlign.left
-                                            : TextAlign.right,
-                                  ),
                                 ),
                               ),
                             ),
                           ),
                         ),
-                      if (columnType == ColumnType.elevatedButtonColumn && text1.isNotEmpty)
+                      if (columnType == ColumnType.elevatedButtonColumn && (text1.isNotEmpty || textChild != null))
                         Expanded(
                           child: Padding(
                               padding: const EdgeInsets.all(2.0),
@@ -127,17 +131,22 @@ class DataGridViewCell extends StatelessWidget {
                                     padding: padding,
                                     child: Tooltip(
                                       message: toolTip ?? "",
-                                      child: Text(
-                                        text == "null" ? "" : text,
-                                        style: style ?? const TextStyle(fontSize: 16.0, color: Colors.black),
-                                        textAlign: ([Alignment.bottomCenter, Alignment.topCenter, Alignment.center]
-                                                .contains(alignment))
-                                            ? TextAlign.center
-                                            : ([Alignment.topLeft, Alignment.bottomLeft, Alignment.centerLeft]
-                                                    .contains(alignment))
-                                                ? TextAlign.left
-                                                : TextAlign.right,
-                                      ),
+                                      child: text1.isEmpty && textChild != null
+                                          ? textChild
+                                          : Text(
+                                              text == "null" ? "" : text,
+                                              style: style ?? const TextStyle(fontSize: 16.0, color: Colors.black),
+                                              textAlign: ([
+                                                Alignment.bottomCenter,
+                                                Alignment.topCenter,
+                                                Alignment.center
+                                              ].contains(alignment))
+                                                  ? TextAlign.center
+                                                  : ([Alignment.topLeft, Alignment.bottomLeft, Alignment.centerLeft]
+                                                          .contains(alignment))
+                                                      ? TextAlign.left
+                                                      : TextAlign.right,
+                                            ),
                                     ),
                                   ),
                                 ),

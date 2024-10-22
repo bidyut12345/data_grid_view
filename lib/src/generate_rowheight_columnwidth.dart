@@ -77,8 +77,7 @@ Map<int, dynamic> generateColumnWidthAndRowHeight(
           ..textDirection = TextDirection.ltr
           ..layout(minWidth: 0, maxWidth: maxFieldWidth - (additonalWidth)); //widget.maxColumnWidth
 
-        if (headerHeight <
-                (textPainter.height + additionalHeight + widget.headerPadding.top + widget.headerPadding.bottom) &&
+        if (headerHeight < (textPainter.height + additionalHeight + widget.headerPadding.top + widget.headerPadding.bottom) &&
             (textPainter.height + additionalHeight) > widget.defaultRowHeight) {
           headerHeight = textPainter.height + additionalHeight + widget.headerPadding.top + widget.headerPadding.bottom;
         }
@@ -88,7 +87,7 @@ Map<int, dynamic> generateColumnWidthAndRowHeight(
     }
   });
   maxWidth = (maxWidth - scrollBarThickness) - (columnWidths.length * 26); //155
-  if (widget.isRowheader) maxWidth - widget.defaultRowHeaderWidth;
+  if (widget.isRowheader) maxWidth = maxWidth - widget.defaultRowHeaderWidth;
   var totalFixedWidth = (widget.additonalColumnsRight?.map((e) => e.columnWidth ?? 0).toList().sum ?? 0) +
       (widget.additonalColumnsLeft?.map((e) => e.columnWidth ?? 0).toList().sum ?? 0);
   double totalWidth = columnWidths.values.sum + totalFixedWidth; // + scrollBarThickness;
@@ -129,11 +128,9 @@ Map<int, dynamic> generateColumnWidthAndRowHeight(
             ..textDirection = TextDirection.ltr
             ..layout(minWidth: 0, maxWidth: maxFieldWidth); //widget.maxColumnWidth
 
-          if (headerHeight <
-                  (textPainter.height + additionalHeight + widget.headerPadding.top + widget.headerPadding.bottom) &&
+          if (headerHeight < (textPainter.height + additionalHeight + widget.headerPadding.top + widget.headerPadding.bottom) &&
               (textPainter.height + additionalHeight) > widget.defaultRowHeight) {
-            headerHeight =
-                textPainter.height + additionalHeight + widget.headerPadding.top + widget.headerPadding.bottom;
+            headerHeight = textPainter.height + additionalHeight + widget.headerPadding.top + widget.headerPadding.bottom;
           }
         }
       }

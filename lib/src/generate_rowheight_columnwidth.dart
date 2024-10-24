@@ -49,8 +49,9 @@ Map<int, dynamic> generateColumnWidthAndRowHeight(
         style = TextStyle(fontSize: widget.cellFontSize);
         for (int i = 0; i < filterdata.length; i++) {
           Map<String, dynamic> rowData = filterdata[i];
+          var text = widget.cellFormat == null ? rowData[fieldname].toString().trim() : widget.cellFormat!(i, fieldname, rowData[fieldname]);
           textPainter = TextPainter()
-            ..text = TextSpan(text: rowData[fieldname].toString().trim(), style: style)
+            ..text = TextSpan(text: text, style: style)
             ..textDirection = TextDirection.ltr
             ..textWidthBasis = TextWidthBasis.longestLine
             ..layout(minWidth: 0, maxWidth: widget.maxColumnWidth);

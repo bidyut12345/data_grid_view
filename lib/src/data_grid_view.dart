@@ -753,6 +753,9 @@ class _DataGridViewState extends State<DataGridView> {
                                                             cellIndec++;
                                                             String cellName =
                                                                 filterdata.first.keys.toList()[cellIndex].toString();
+                                                            if ((widget.hiddenDataColumns ?? []).contains(cellName)) {
+                                                              return Container();
+                                                            }
                                                             return DataGridViewCell(
                                                               rowIndex: rowIndex,
                                                               text: widget.cellFormat == null

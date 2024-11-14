@@ -44,6 +44,7 @@ Map<int, dynamic> generateColumnWidthAndRowHeight(
       if ((widget.dataColumnWidths ?? {}).containsKey(fieldname)) {
         columnWidths.addAll({fieldname: widget.dataColumnWidths![fieldname]!});
       } else {
+        // print("from width 1 : $fieldname");
         double maxFieldWidth = widget.defaultColumnWidth;
         TextStyle style = TextStyle(fontSize: widget.headerFontSize);
         style = TextStyle(fontSize: widget.cellFontSize);
@@ -58,6 +59,7 @@ Map<int, dynamic> generateColumnWidthAndRowHeight(
           if (maxFieldWidth < textPainter.width + additonalWidth) {
             maxFieldWidth = textPainter.width + additonalWidth;
           }
+
           if ((rowHeights[i] ?? widget.defaultRowHeight) < (textPainter.height + additionalHeight) &&
               (textPainter.height + additionalHeight) > widget.defaultRowHeight) {
             rowHeights[i] = textPainter.height + additionalHeight;
@@ -108,12 +110,14 @@ Map<int, dynamic> generateColumnWidthAndRowHeight(
         if ((widget.dataColumnWidths ?? {}).containsKey(fieldname)) {
           // columnWidths.addAll({fieldname: widget.dataColumnWidths![fieldname]!});
         } else {
+          // print("from width 2 : $fieldname");
           double maxFieldWidth = (columnWidths[fieldname] ?? 0) - additonalWidth;
           TextStyle style = TextStyle(fontSize: widget.cellFontSize);
           for (int i = 0; i < filterdata.length; i++) {
             Map<String, dynamic> rowData = filterdata[i];
+            var text = widget.cellFormat == null ? rowData[fieldname].toString().trim() : widget.cellFormat!(i, fieldname, rowData[fieldname]);
             TextPainter textPainter = TextPainter()
-              ..text = TextSpan(text: rowData[fieldname].toString().trim(), style: style)
+              ..text = TextSpan(text: text, style: style)
               ..textDirection = TextDirection.ltr
               ..textWidthBasis = TextWidthBasis.longestLine
               ..layout(minWidth: 0, maxWidth: maxFieldWidth);

@@ -586,13 +586,14 @@ class _DataGridViewState extends State<DataGridView> {
                                             ...List.generate(
                                                 min(filterdata.length - (currentPageNumber * widget.itemsPerPage),
                                                     widget.itemsPerPage), (index_) {
-                                              var index = (currentPageNumber * widget.itemsPerPage) + index_;
-                                              var rheight =
-                                                  (rowHeights[index_] ?? widget.defaultRowHeight) + _extraCellPadding;
+                                              var rowIndex = (currentPageNumber * widget.itemsPerPage) + index_;
+                                              // var rheight =
+                                              //     (rowHeights[index_] ?? widget.defaultRowHeight) + _extraCellPadding;
+                                              var rheight = getRowHeight(rowIndex);
                                               return DataGridViewCell(
-                                                rowIndex: index,
+                                                rowIndex: rowIndex,
                                                 color: widget.rowHeaderColor,
-                                                text: (index + 1).toString(),
+                                                text: (rowIndex + 1).toString(),
                                                 cellHeight: rheight,
                                                 cellWidth: widget.defaultColumnWidth,
                                                 isHeader: true,
@@ -673,8 +674,7 @@ class _DataGridViewState extends State<DataGridView> {
                                                   }
                                                   var rowIndex = (currentPageNumber * widget.itemsPerPage) + rowIndex_;
                                                   int cellIndec = -1;
-                                                  var rheight = (rowHeights[rowIndex] ?? widget.defaultRowHeight) +
-                                                      _extraCellPadding;
+                                                  var rheight = getRowHeight(rowIndex);
                                                   return SizedBox(
                                                     // color: Colors.red,
                                                     height: rheight,
@@ -1023,6 +1023,10 @@ class _DataGridViewState extends State<DataGridView> {
         ],
       ),
     );
+  }
+
+  double getRowHeight(int rowIndex) {
+    return (rowHeights[rowIndex] ?? widget.defaultRowHeight) + _extraCellPadding;
   }
 
   int currentPageNumber = 0;

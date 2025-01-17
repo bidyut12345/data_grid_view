@@ -74,6 +74,7 @@ class DataGridView extends StatefulWidget {
     this.itemsPerPage = 250,
     this.onRowClick,
     this.cellFormat,
+    this.mobileRowBuilder,
   }) : super(key: key);
 
   final List<Map<String, dynamic>> data;
@@ -123,6 +124,9 @@ class DataGridView extends StatefulWidget {
   final int itemsPerPage;
   final Function(int rowIndex, Map<String, dynamic>)? onRowClick;
   final String Function(int rowIndex, String fieldName, dynamic value)? cellFormat;
+
+  final Widget Function(int rowIndex, Map<String, dynamic> rowdata, List<Widget> actions)? mobileRowBuilder;
+
   @override
   State<DataGridView> createState() => _DataGridViewState();
 }
@@ -280,17 +284,61 @@ class _DataGridViewState extends State<DataGridView> {
     //   );
     // }
     if (isMobileView) {
-      return ListView.builder(
+      return ListView.separated(
         itemCount: widget.data.length,
+        separatorBuilder: (context, index) => const Divider(height: 1),
         itemBuilder: (context, rowIndex) {
+          var actions = (widget.additonalColumnsLeft
+                      ?.where(
+                        (element) => element.columnType == ColumnType.iconButtonColumn,
+                      )
+                      .map(
+                        (e) => IconButton.outlined(
+                          icon: Icon(e.iconData),
+                          onPressed: () {
+                            if (e.onCellPressed != null) {
+                              e.onCellPressed!(
+                                  rowIndex,
+                                  0,
+                                  (e.onClickReturnFieldNames ?? [])
+                                      .map((cellname) => filterdata[rowIndex][cellname])
+                                      .toList());
+                            }
+                          },
+                        ),
+                      )
+                      .toList() ??
+                  []) +
+              (widget.additonalColumnsRight
+                      ?.map(
+                        (e) => IconButton.outlined(
+                          icon: Icon(e.iconData),
+                          onPressed: () {
+                            if (e.onCellPressed != null) {
+                              e.onCellPressed!(
+                                  rowIndex,
+                                  0,
+                                  (e.onClickReturnFieldNames ?? [])
+                                      .map((cellname) => filterdata[rowIndex][cellname])
+                                      .toList());
+                            }
+                          },
+                        ),
+                      )
+                      .toList() ??
+                  []);
           var row = widget.data[rowIndex];
-          return Padding(
-            padding: const EdgeInsets.all(10),
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(10),
-                child: Column(
-                  children: row.keys.map(
+          if (widget.mobileRowBuilder != null) {
+            return widget.mobileRowBuilder!(rowIndex, filterdata[rowIndex], actions);
+          } else {
+            return ListTile(
+              dense: true,
+              onTap: () {},
+              title: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: row.keys.map(
                         (e) {
                           var str = row[e].toString();
                           if (str == "null") {
@@ -304,8 +352,8 @@ class _DataGridViewState extends State<DataGridView> {
                               Expanded(
                                 flex: 3,
                                 child: Text(
-                                  e,
-                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                  widget.dataColumnHeadertexts?[e] ?? e,
+                                  style: const TextStyle(fontWeight: FontWeight.bold),
                                 ),
                               ),
                               Expanded(
@@ -315,38 +363,21 @@ class _DataGridViewState extends State<DataGridView> {
                             ],
                           );
                         },
-                      ).toList() +
-                      [
-                        Row(
-                          children: widget.additonalColumnsLeft
-                                  ?.map(
-                                    (e) => Expanded(
-                                        flex: 1,
-                                        child: Padding(
-                                          padding: EdgeInsets.all(2),
-                                          child: ElevatedButton(
-                                            child: Icon(e.iconData),
-                                            onPressed: () {
-                                              if (e.onCellPressed != null) {
-                                                e.onCellPressed!(
-                                                    rowIndex,
-                                                    0,
-                                                    (e.onClickReturnFieldNames ?? [])
-                                                        .map((cellname) => filterdata[rowIndex][cellname])
-                                                        .toList());
-                                              }
-                                            },
-                                          ),
-                                        )),
-                                  )
-                                  .toList() ??
-                              [],
-                        ),
-                      ],
-                ),
+                      ).toList(),
+                    ),
+                  ),
+                  Column(
+                    children: actions
+                        .map((e) => Padding(
+                              padding: EdgeInsets.all(2),
+                              child: e,
+                            ))
+                        .toList(),
+                  )
+                ],
               ),
-            ),
-          );
+            );
+          }
         },
       );
     }

@@ -4,8 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 // import 'package:data_grid_view/data_grid_view.dart';
 import 'package:flutter/widgets.dart';
-import 'package:webf/devtools.dart';
-import 'package:webf/webf.dart';
+// import 'package:webf/devtools.dart';
+// import 'package:webf/webf.dart';
 // import 'package:linked_scroll_controller/linked_scroll_controller.dart';
 // import 'package:webview_all/webview_all.dart';
 
@@ -42,20 +42,20 @@ class _MyHomePageState extends State<MyHomePage> {
   // var scHorizontal = LinkedScrollControllerGroup();
   // late ScrollController scHeader;
   // ScrollController scVertical = ScrollController();
-  WebFController? controller;
+  // WebFController? controller;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    Timer.run(() {
-      controller = WebFController(
-        context,
-        devToolsService: ChromeDevToolsService(),
-      );
-      controller?.preload(WebFBundle.fromContent("<html><b>sadfsdfsd</b></html>"));
-      setState(() {});
-    });
+    // Timer.run(() {
+    //   controller = WebFController(
+    //     context,
+    //     devToolsService: ChromeDevToolsService(),
+    //   );
+    //   controller?.preload(WebFBundle.fromContent("<html><b>sadfsdfsd</b></html>"));
+    //   setState(() {});
+    // });
   }
 
   @override
@@ -145,7 +145,8 @@ class _MyHomePageState extends State<MyHomePage> {
             //     },
             //   ),
             // ),
-            child: controller == null ? Container() : WebF(controller: controller),
+            // child: controller == null ? Container() : WebF(controller: controller),
+            child: Container(),
           ),
         ],
       ),

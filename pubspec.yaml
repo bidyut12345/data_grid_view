@@ -1,6 +1,6 @@
 name: data_grid_view
 description: DataGridView widget similar to Winforms DataGridView with XLS/PDF export support and Direct Prinitng Support.
-version: 0.0.2
+version: 0.0.3
 homepage:
 repository: https://github.com/bidyut12345/data_grid_view.git
 

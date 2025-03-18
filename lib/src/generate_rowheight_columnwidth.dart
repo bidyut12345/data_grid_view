@@ -129,7 +129,7 @@ Map<int, dynamic> generateColumnWidthAndRowHeight(
           }
           style = TextStyle(fontSize: widget.headerFontSize);
           textPainter = TextPainter()
-            ..text = TextSpan(text: "⬇️ ${(widget.dataColumnHeadertexts ?? {})[fieldname] ?? fieldname}", style: style)
+            ..text = TextSpan(text: "⬇️ ${widget.dataColumnHeadertexts?[fieldname] ?? fieldname}", style: style)
             ..textDirection = TextDirection.ltr
             ..layout(minWidth: 0, maxWidth: maxFieldWidth); //widget.maxColumnWidth
 

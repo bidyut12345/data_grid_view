@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum ColumnType { textColumn, elevatedButtonColumn, iconButtonColumn }
+enum ColumnType { textColumn, elevatedButtonColumn, iconButtonColumn, widgetColumn }
 
 class DataGridViewColumn {
   DataGridViewColumn({
@@ -15,10 +15,12 @@ class DataGridViewColumn {
     this.iconData,
     this.elevatedButtonStyle,
     this.columnType = ColumnType.textColumn,
+    this.cellWidget,
   });
   final double? columnWidth;
   final String headerText;
   final String? Function(int rowIndex)? cellText;
+  final Widget Function(int rowIndex)? cellWidget;
   final String? toolTip;
   final String? dataField;
   final List<String>? onClickReturnFieldNames;

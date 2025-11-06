@@ -9,7 +9,7 @@ import 'package:data_grid_view/src/data_grid_view_controller.dart';
 import 'package:data_grid_view/src/data_grid_view_header_cells.dart';
 import 'package:data_grid_view/src/data_grid_view_html.dart';
 import 'package:data_grid_view/src/generate_pdf.dart';
-import 'package:data_grid_view/src/generate_rowheight_columnWidth.dart';
+import 'package:data_grid_view/src/generate_rowheight_columnwidth.dart';
 import 'package:data_grid_view/src/generate_xls.dart';
 import 'package:data_grid_view/src/print_preview.dart';
 import 'package:flutter/cupertino.dart';
@@ -113,7 +113,7 @@ class DataGridView extends StatefulWidget {
   final double cellFontSize;
   final bool allowFilter;
   // final String dateFormat;
-// final bool showS
+  // final bool showS
   final bool autoMobileView;
   final bool? mobileView;
   final bool isLandscapePreview;
@@ -187,16 +187,17 @@ class _DataGridViewState extends State<DataGridView> {
 
   _generatePDF({String fileName = "Report.pdf", double scale = 1.0, String reportHeaderText = "Report", String reportSubHeaderText = ""}) {
     savePdf(
-        widget,
-        filterdata,
-        reportHeaderText,
-        reportSubHeaderText,
-        PdfPageFormat.a4.copyWith(marginLeft: 20, marginTop: 20, marginRight: 20, marginBottom: 20),
-        columnWidths,
-        widget.defaultColumnWidth,
-        fileName,
-        widget.hiddenDataColumns ?? [],
-        scale: scale);
+      widget,
+      filterdata,
+      reportHeaderText,
+      reportSubHeaderText,
+      PdfPageFormat.a4.copyWith(marginLeft: 20, marginTop: 20, marginRight: 20, marginBottom: 20),
+      columnWidths,
+      widget.defaultColumnWidth,
+      fileName,
+      widget.hiddenDataColumns ?? [],
+      scale: scale,
+    );
   }
 
   _printPreview({double scale = 1.0, String reportHeaderText = "Report", String reportSubHeaderText = ""}) {
@@ -282,10 +283,9 @@ class _DataGridViewState extends State<DataGridView> {
         itemCount: widget.data.length,
         separatorBuilder: (context, index) => const Divider(height: 1),
         itemBuilder: (context, rowIndex) {
-          var actions = (widget.additonalColumnsLeft
-                      ?.where(
-                        (element) => element.columnType == ColumnType.iconButtonColumn,
-                      )
+          var actions =
+              (widget.additonalColumnsLeft
+                      ?.where((element) => element.columnType == ColumnType.iconButtonColumn)
                       .map(
                         (e) => IconButton.outlined(
                           icon: Icon(e.iconData),
@@ -322,42 +322,25 @@ class _DataGridViewState extends State<DataGridView> {
                 children: [
                   Expanded(
                     child: Column(
-                      children: row.keys.map(
-                        (e) {
-                          var str = row[e].toString();
-                          if (str == "null") {
-                            str = "";
-                          }
-                          if (widget.hiddenDataColumns?.contains(e) ?? false) {
-                            return Container();
-                          }
-                          return Row(
-                            children: [
-                              Expanded(
-                                flex: 3,
-                                child: Text(
-                                  widget.dataColumnHeadertexts?[e] ?? e,
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                              Expanded(
-                                flex: 5,
-                                child: Text(str),
-                              ),
-                            ],
-                          );
-                        },
-                      ).toList(),
+                      children:
+                          row.keys.map((e) {
+                            var str = row[e].toString();
+                            if (str == "null") {
+                              str = "";
+                            }
+                            if (widget.hiddenDataColumns?.contains(e) ?? false) {
+                              return Container();
+                            }
+                            return Row(
+                              children: [
+                                Expanded(flex: 3, child: Text(widget.dataColumnHeadertexts?[e] ?? e, style: const TextStyle(fontWeight: FontWeight.bold))),
+                                Expanded(flex: 5, child: Text(str)),
+                              ],
+                            );
+                          }).toList(),
                     ),
                   ),
-                  Column(
-                    children: actions
-                        .map((e) => Padding(
-                              padding: EdgeInsets.all(2),
-                              child: e,
-                            ))
-                        .toList(),
-                  )
+                  Column(children: actions.map((e) => Padding(padding: EdgeInsets.all(2), child: e)).toList()),
                 ],
               ),
             );
@@ -369,17 +352,17 @@ class _DataGridViewState extends State<DataGridView> {
       int rowIndex = -1;
       return SingleChildScrollView(
         child: Column(
-          children: widget.data.map(
-            (row) {
-              rowIndex++;
-              return Padding(
-                padding: const EdgeInsets.all(10),
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Column(
-                      children: row.keys.map(
-                            (e) {
+          children:
+              widget.data.map((row) {
+                rowIndex++;
+                return Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Column(
+                        children:
+                            row.keys.map((e) {
                               var str = row[e].toString();
                               if (str == "null") {
                                 str = "";
@@ -389,52 +372,47 @@ class _DataGridViewState extends State<DataGridView> {
                               }
                               return Row(
                                 children: [
-                                  Expanded(
-                                    flex: 3,
-                                    child: Text(
-                                      e,
-                                      style: TextStyle(fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                  Expanded(
-                                    flex: 5,
-                                    child: Text(str),
-                                  ),
+                                  Expanded(flex: 3, child: Text(e, style: TextStyle(fontWeight: FontWeight.bold))),
+                                  Expanded(flex: 5, child: Text(str)),
                                 ],
                               );
-                            },
-                          ).toList() +
-                          [
-                            Row(
-                              children: widget.additonalColumnsLeft
-                                      ?.map(
-                                        (e) => Expanded(
+                            }).toList() +
+                            [
+                              Row(
+                                children:
+                                    widget.additonalColumnsLeft
+                                        ?.map(
+                                          (e) => Expanded(
                                             flex: 1,
                                             child: Padding(
                                               padding: EdgeInsets.all(2),
-                                              child: (e.cellWidget != null)
-                                                  ? e.cellWidget!(rowIndex)
-                                                  : ElevatedButton(
-                                                      child: Icon(e.iconData),
-                                                      onPressed: () {
-                                                        if (e.onCellPressed != null) {
-                                                          e.onCellPressed!(rowIndex, 0,
-                                                              (e.onClickReturnFieldNames ?? []).map((cellname) => filterdata[rowIndex][cellname]).toList());
-                                                        }
-                                                      },
-                                                    ),
-                                            )),
-                                      )
-                                      .toList() ??
-                                  [],
-                            ),
-                          ],
+                                              child:
+                                                  (e.cellWidget != null)
+                                                      ? e.cellWidget!(rowIndex)
+                                                      : ElevatedButton(
+                                                        child: Icon(e.iconData),
+                                                        onPressed: () {
+                                                          if (e.onCellPressed != null) {
+                                                            e.onCellPressed!(
+                                                              rowIndex,
+                                                              0,
+                                                              (e.onClickReturnFieldNames ?? []).map((cellname) => filterdata[rowIndex][cellname]).toList(),
+                                                            );
+                                                          }
+                                                        },
+                                                      ),
+                                            ),
+                                          ),
+                                        )
+                                        .toList() ??
+                                    [],
+                              ),
+                            ],
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
-          ).toList(),
+                );
+              }).toList(),
         ),
       );
     }
@@ -447,56 +425,59 @@ class _DataGridViewState extends State<DataGridView> {
             children: [
               widget.showExportPDFButton
                   ? Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: ElevatedButton(
-                          child: const Text("Generate PDF"),
-                          onPressed: () async {
-                            _generatePDF();
-                          }),
-                    )
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(
+                      child: const Text("Generate PDF"),
+                      onPressed: () async {
+                        _generatePDF();
+                      },
+                    ),
+                  )
                   : Container(),
               widget.showExportExcelButton
                   ? Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: ElevatedButton(
-                        child: const Text("Generate Excel"),
-                        onPressed: () async {
-                          _generateXls();
-                        },
-                      ),
-                    )
-                  : Container()
+                    padding: const EdgeInsets.all(8.0),
+                    child: ElevatedButton(
+                      child: const Text("Generate Excel"),
+                      onPressed: () async {
+                        _generateXls();
+                      },
+                    ),
+                  )
+                  : Container(),
             ],
           ),
           Expanded(
-            child: LayoutBuilder(builder: (context, contrains) {
-              if ((filterdata.length / widget.itemsPerPage) < currentPageNumber) {
-                currentPageNumber = 0;
-              }
-              var data = generateColumnWidthAndRowHeight(
+            child: LayoutBuilder(
+              builder: (context, contrains) {
+                if ((filterdata.length / widget.itemsPerPage) < currentPageNumber) {
+                  currentPageNumber = 0;
+                }
+                var data = generateColumnWidthAndRowHeight(
                   filterdata.sublist(currentPageNumber * widget.itemsPerPage, min((currentPageNumber + 1) * widget.itemsPerPage, filterdata.length)),
                   widget,
                   contrains.maxWidth,
-                  scrollBarThickness);
-              columnWidths = data[0] ?? {};
-              rowHeights = data[1] ?? {};
-              headerHeight = data[2] ?? widget.defaultRowHeight;
-              return Stack(
-                fit: StackFit.expand,
-                children: [
-                  if (filterdata.isNotEmpty)
-                    Column(
-                      children: [
-                        //Header
-                        SizedBox(
-                          height: headerHeight,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.max,
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              //Row Header Column
-                              widget.isRowheader
-                                  ? Padding(
+                  scrollBarThickness,
+                );
+                columnWidths = data[0] ?? {};
+                rowHeights = data[1] ?? {};
+                headerHeight = data[2] ?? widget.defaultRowHeight;
+                return Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    if (filterdata.isNotEmpty)
+                      Column(
+                        children: [
+                          //Header
+                          SizedBox(
+                            height: headerHeight,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.max,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                //Row Header Column
+                                widget.isRowheader
+                                    ? Padding(
                                       padding: EdgeInsets.only(top: 1),
                                       child: Container(
                                         decoration: BoxDecoration(
@@ -527,34 +508,27 @@ class _DataGridViewState extends State<DataGridView> {
                                         ),
                                       ),
                                     )
-                                  : Container(),
-                              //Column Header
-                              Expanded(
-                                child: SingleChildScrollView(
-                                  controller: columnHeaderVerticalController,
-                                  physics: const AlwaysScrollableScrollPhysics(),
-                                  scrollDirection: Axis.horizontal,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: widget.columnHeaderColor,
-                                      borderRadius: BorderRadius.only(
-                                        topLeft: (widget.isRowheader) ? Radius.zero : Radius.circular(5),
-                                        topRight: Radius.circular(5),
-                                        bottomLeft: (widget.isRowheader) ? Radius.zero : Radius.circular(5),
-                                        bottomRight: Radius.circular(5),
+                                    : Container(),
+                                //Column Header
+                                Expanded(
+                                  child: SingleChildScrollView(
+                                    controller: columnHeaderVerticalController,
+                                    physics: const AlwaysScrollableScrollPhysics(),
+                                    scrollDirection: Axis.horizontal,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: widget.columnHeaderColor,
+                                        borderRadius: BorderRadius.only(
+                                          topLeft: (widget.isRowheader) ? Radius.zero : Radius.circular(5),
+                                          topRight: Radius.circular(5),
+                                          bottomLeft: (widget.isRowheader) ? Radius.zero : Radius.circular(5),
+                                          bottomRight: Radius.circular(5),
+                                        ),
                                       ),
-                                    ),
-                                    clipBehavior: Clip.antiAlias,
-                                    child: Row(
-                                      children: [
-                                        ...headerCells(
-                                          widget,
-                                          _extraCellPadding,
-                                          sortData,
-                                          columnWidths,
-                                          setState,
-                                          showSortingPopupMenu,
-                                          (fieldname) {
+                                      clipBehavior: Clip.antiAlias,
+                                      child: Row(
+                                        children: [
+                                          ...headerCells(widget, _extraCellPadding, sortData, columnWidths, setState, showSortingPopupMenu, (fieldname) {
                                             if (sortData.containsKey(fieldname)) {
                                               if (sortData[fieldname] == "ASC") {
                                                 sortData = {};
@@ -567,27 +541,25 @@ class _DataGridViewState extends State<DataGridView> {
                                               sortData.addAll({fieldname: "ASC"});
                                             }
                                             setState(() {});
-                                          },
-                                          headerHeight,
-                                        ),
-                                      ],
+                                          }, headerHeight),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                              if (isScrollVisible && !widget.scrollbarAboveContent) SizedBox(width: scrollBarThickness),
-                              //Right hand side scrollbar leave space
-                              // SizedBox(width: scrollBarThickness),
-                            ],
+                                if (isScrollVisible && !widget.scrollbarAboveContent) SizedBox(width: scrollBarThickness),
+                                //Right hand side scrollbar leave space
+                                // SizedBox(width: scrollBarThickness),
+                              ],
+                            ),
                           ),
-                        ),
-                        //Rows
-                        Expanded(
-                          child: Row(
-                            children: [
-                              // Row Header
-                              widget.isRowheader
-                                  ? SizedBox(
+                          //Rows
+                          Expanded(
+                            child: Row(
+                              children: [
+                                // Row Header
+                                widget.isRowheader
+                                    ? SizedBox(
                                       width: widget.defaultRowHeaderWidth,
                                       child: ScrollConfiguration(
                                         behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
@@ -608,10 +580,7 @@ class _DataGridViewState extends State<DataGridView> {
                                                 cellWidth: widget.defaultColumnWidth,
                                                 isHeader: true,
                                                 extraCellheight: _extraCellPadding,
-                                                style: TextStyle(
-                                                  fontSize: widget.cellFontSize,
-                                                  color: widget.textColor,
-                                                ),
+                                                style: TextStyle(fontSize: widget.cellFontSize, color: widget.textColor),
                                                 alignment: Alignment.center,
                                                 padding: widget.cellPadding,
                                               );
@@ -620,69 +589,69 @@ class _DataGridViewState extends State<DataGridView> {
                                               Container(
                                                 // color: Colors.red,
                                                 height: scrollBarThickness + 3,
-                                              )
-                                            ]
+                                              ),
+                                            ],
                                           ],
                                         ),
                                       ),
                                     )
-                                  : Container(),
-                              //Rows main data
-                              Expanded(
-                                child: Stack(
-                                  fit: StackFit.loose,
-                                  alignment: Alignment.topRight,
-                                  children: [
-                                    Container(
-                                      // color: Colors.red,
-                                      alignment: Alignment.topLeft,
-                                      padding: EdgeInsets.only(right: (isScrollVisible && !widget.scrollbarAboveContent) ? scrollBarThickness : 0),
-                                      child: Scrollbar(
-                                        controller: rowsVerticalController,
-                                        thumbVisibility: isScrollVisible && !widget.hideHorizontalScroll,
-                                        thickness: scrollBarThickness,
-                                        child: SingleChildScrollView(
+                                    : Container(),
+                                //Rows main data
+                                Expanded(
+                                  child: Stack(
+                                    fit: StackFit.loose,
+                                    alignment: Alignment.topRight,
+                                    children: [
+                                      Container(
+                                        // color: Colors.red,
+                                        alignment: Alignment.topLeft,
+                                        padding: EdgeInsets.only(right: (isScrollVisible && !widget.scrollbarAboveContent) ? scrollBarThickness : 0),
+                                        child: Scrollbar(
                                           controller: rowsVerticalController,
-                                          scrollDirection: Axis.horizontal,
-                                          physics: const AlwaysScrollableScrollPhysics(),
-                                          child: SizedBox(
-                                            //Row
-                                            width: columnWidths.values.toList().sum +
-                                                (columnWidths.values.toList().length * 25) +
-                                                (widget.additonalColumnsLeft ?? []).map((e) => e.columnWidth ?? widget.defaultColumnWidth).toList().sum +
-                                                (widget.additonalColumnsRight ?? [])
-                                                    .map((e) => e.columnWidth ?? widget.defaultColumnWidth)
-                                                    .toList()
-                                                    .sum, // + ((!widget.hideHorizontalScroll) ? scrollBarThickness : 0),
-                                            child: ScrollConfiguration(
-                                              behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-                                              child: ListView.builder(
-                                                //Cells
-                                                // cacheExtent: 5000,
-                                                itemCount: min(filterdata.length - (currentPageNumber * widget.itemsPerPage), widget.itemsPerPage) + 1,
-                                                controller: listViewVerticalController,
-                                                physics: const AlwaysScrollableScrollPhysics(),
-                                                itemBuilder: (context, rowIndex_) {
-                                                  if (rowIndex_ >= min(filterdata.length - (currentPageNumber * widget.itemsPerPage), widget.itemsPerPage)) {
+                                          thumbVisibility: isScrollVisible && !widget.hideHorizontalScroll,
+                                          thickness: scrollBarThickness,
+                                          child: SingleChildScrollView(
+                                            controller: rowsVerticalController,
+                                            scrollDirection: Axis.horizontal,
+                                            physics: const AlwaysScrollableScrollPhysics(),
+                                            child: SizedBox(
+                                              //Row
+                                              width:
+                                                  columnWidths.values.toList().sum +
+                                                  (columnWidths.values.toList().length * 25) +
+                                                  (widget.additonalColumnsLeft ?? []).map((e) => e.columnWidth ?? widget.defaultColumnWidth).toList().sum +
+                                                  (widget.additonalColumnsRight ?? [])
+                                                      .map((e) => e.columnWidth ?? widget.defaultColumnWidth)
+                                                      .toList()
+                                                      .sum, // + ((!widget.hideHorizontalScroll) ? scrollBarThickness : 0),
+                                              child: ScrollConfiguration(
+                                                behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+                                                child: ListView.builder(
+                                                  //Cells
+                                                  // cacheExtent: 5000,
+                                                  itemCount: min(filterdata.length - (currentPageNumber * widget.itemsPerPage), widget.itemsPerPage) + 1,
+                                                  controller: listViewVerticalController,
+                                                  physics: const AlwaysScrollableScrollPhysics(),
+                                                  itemBuilder: (context, rowIndex_) {
+                                                    if (rowIndex_ >= min(filterdata.length - (currentPageNumber * widget.itemsPerPage), widget.itemsPerPage)) {
+                                                      return SizedBox(
+                                                        // color: Colors.red,
+                                                        width: columnWidths.values.toList().sum + ((!widget.hideHorizontalScroll) ? scrollBarThickness : 0),
+                                                        height: scrollBarThickness + 3,
+                                                      );
+                                                    }
+                                                    var rowIndex = (currentPageNumber * widget.itemsPerPage) + rowIndex_;
+                                                    int cellIndec = -1;
+                                                    var rheight = getRowHeight(rowIndex);
                                                     return SizedBox(
                                                       // color: Colors.red,
-                                                      width: columnWidths.values.toList().sum + ((!widget.hideHorizontalScroll) ? scrollBarThickness : 0),
-                                                      height: scrollBarThickness + 3,
-                                                    );
-                                                  }
-                                                  var rowIndex = (currentPageNumber * widget.itemsPerPage) + rowIndex_;
-                                                  int cellIndec = -1;
-                                                  var rheight = getRowHeight(rowIndex);
-                                                  return SizedBox(
-                                                    // color: Colors.red,
-                                                    height: rheight,
-                                                    child: TextButton(
-                                                      onPressed: () {
-                                                        if (widget.onRowClick != null) widget.onRowClick!(rowIndex, filterdata[rowIndex]);
-                                                      },
-                                                      style: TextButton.styleFrom().copyWith(
-                                                        backgroundColor: MaterialStateProperty.resolveWith<Color?>(
-                                                          (states) {
+                                                      height: rheight,
+                                                      child: TextButton(
+                                                        onPressed: () {
+                                                          if (widget.onRowClick != null) widget.onRowClick!(rowIndex, filterdata[rowIndex]);
+                                                        },
+                                                        style: TextButton.styleFrom().copyWith(
+                                                          backgroundColor: MaterialStateProperty.resolveWith<Color?>((states) {
                                                             if (states.contains(MaterialState.hovered)) {
                                                               return Colors.blue.withOpacity(0.1);
                                                             }
@@ -690,203 +659,197 @@ class _DataGridViewState extends State<DataGridView> {
                                                             //   return Colors.yellow;
                                                             // }
                                                             return Colors.transparent;
-                                                          },
+                                                          }),
+                                                          // foregroundColor: MaterialStateProperty.resolveWith<Color?>(
+                                                          //   (states) {
+                                                          //     if (states.contains(MaterialState.hovered)) {
+                                                          //       return Colors.green;
+                                                          //     }
+                                                          //     return Colors.black;
+                                                          //   },
+                                                          // ),
+                                                          padding: MaterialStateProperty.all(EdgeInsets.zero),
+                                                          shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(1))),
                                                         ),
-                                                        // foregroundColor: MaterialStateProperty.resolveWith<Color?>(
-                                                        //   (states) {
-                                                        //     if (states.contains(MaterialState.hovered)) {
-                                                        //       return Colors.green;
-                                                        //     }
-                                                        //     return Colors.black;
-                                                        //   },
-                                                        // ),
-                                                        padding: MaterialStateProperty.all(EdgeInsets.zero),
-                                                        shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(1))),
-                                                      ),
-                                                      child: Row(
-                                                        children:
-                                                            //Additional Column Left Cells
-                                                            [
-                                                          ...(widget.additonalColumnsLeft ?? []).map((e) {
-                                                            cellIndec++;
-                                                            return (e.cellWidget != null)
-                                                                ? SizedBox(
-                                                                    width: e.columnWidth ?? widget.defaultColumnWidth,
-                                                                    child: e.cellWidget!(rowIndex),
-                                                                  )
-                                                                : DataGridViewCell(
+                                                        child: Row(
+                                                          children:
+                                                          //Additional Column Left Cells
+                                                          [
+                                                            ...(widget.additonalColumnsLeft ?? []).map((e) {
+                                                              cellIndec++;
+                                                              return (e.cellWidget != null)
+                                                                  ? SizedBox(width: e.columnWidth ?? widget.defaultColumnWidth, child: e.cellWidget!(rowIndex))
+                                                                  : DataGridViewCell(
                                                                     rowIndex: rowIndex,
                                                                     text: e.cellText == null ? "" : (e.cellText!(rowIndex) ?? ""),
                                                                     color: null,
                                                                     toolTip: e.toolTip,
                                                                     cellHeight: rheight,
                                                                     cellWidth: e.columnWidth ?? widget.defaultColumnWidth,
-                                                                    onCellPressed: e.onCellPressed == null
-                                                                        ? null
-                                                                        : () {
-                                                                            if (e.onCellPressed != null) {
-                                                                              e.onCellPressed!(
+                                                                    onCellPressed:
+                                                                        e.onCellPressed == null
+                                                                            ? null
+                                                                            : () {
+                                                                              if (e.onCellPressed != null) {
+                                                                                e.onCellPressed!(
                                                                                   rowIndex,
                                                                                   cellIndec,
                                                                                   (e.onClickReturnFieldNames ?? [])
                                                                                       .map((cellname) => filterdata[rowIndex][cellname])
-                                                                                      .toList());
-                                                                            }
-                                                                          },
+                                                                                      .toList(),
+                                                                                );
+                                                                              }
+                                                                            },
                                                                     columnType: e.columnType,
                                                                     iconData: e.iconData,
                                                                     extraCellheight: _extraCellPadding,
-                                                                    style: TextStyle(
-                                                                      fontSize: widget.cellFontSize,
-                                                                      color: widget.textColor,
-                                                                    ),
+                                                                    style: TextStyle(fontSize: widget.cellFontSize, color: widget.textColor),
                                                                     alignment: widget.dataColumnAlignments?[e.columnName ?? ""] ?? widget.cellAlignment,
                                                                     padding: widget.cellPadding,
                                                                   );
-                                                          }),
-                                                          //Main Cells
-                                                          ...List.generate(filterdata.first.keys.length, (cellIndex) {
-                                                            cellIndec++;
-                                                            String cellName = filterdata.first.keys.toList()[cellIndex].toString();
-                                                            if ((widget.hiddenDataColumns ?? []).contains(cellName)) {
-                                                              return Container();
-                                                            }
-                                                            return DataGridViewCell(
-                                                              rowIndex: rowIndex,
-                                                              text: widget.cellFormat == null
-                                                                  ? filterdata[rowIndex][cellName].toString().trim()
-                                                                  : widget.cellFormat!(rowIndex, cellName, filterdata[rowIndex][cellName]),
-                                                              color: null,
-                                                              cellHeight: rheight,
-                                                              cellWidth: (columnWidths[cellName] ?? widget.defaultColumnWidth) + 25,
-                                                              visible: !(widget.hiddenDataColumns ?? []).contains(cellName),
-                                                              extraCellheight: _extraCellPadding,
-                                                              style: TextStyle(
-                                                                fontSize: widget.cellFontSize,
-                                                                color: widget.textColor,
-                                                              ),
-                                                              alignment: widget.dataColumnAlignments?[cellName] ?? widget.cellAlignment,
-                                                              padding: widget.cellPadding,
-                                                            );
-                                                          }).map((e) => widget.hideHorizontalScroll ? Expanded(child: e) : e),
-                                                          //Additional Columns Right Cells
-                                                          ...(widget.additonalColumnsRight ?? []).map((e) {
-                                                            cellIndec++;
-                                                            return DataGridViewCell(
-                                                              rowIndex: rowIndex,
-                                                              text: e.cellText == null ? "" : (e.cellText!(rowIndex) ?? ""),
-                                                              color: null,
-                                                              toolTip: e.toolTip,
-                                                              cellHeight: rheight,
-                                                              cellWidth: e.columnWidth ?? widget.defaultColumnWidth,
-                                                              onCellPressed: e.onCellPressed == null
-                                                                  ? null
-                                                                  : () {
-                                                                      if (e.onCellPressed != null) {
-                                                                        e.onCellPressed!(
-                                                                            rowIndex,
-                                                                            cellIndec,
-                                                                            (e.onClickReturnFieldNames ?? [])
-                                                                                .map((cellname) => filterdata[rowIndex][cellname])
-                                                                                .toList());
-                                                                      }
-                                                                    },
-                                                              columnType: e.columnType,
-                                                              iconData: e.iconData,
-                                                              extraCellheight: _extraCellPadding,
-                                                              style: TextStyle(
-                                                                fontSize: widget.cellFontSize,
-                                                                color: widget.textColor,
-                                                              ),
-                                                              alignment: widget.dataColumnAlignments?[e.columnName ?? ""] ?? widget.cellAlignment,
-                                                              padding: widget.cellPadding,
-                                                            );
-                                                          }),
+                                                            }),
+                                                            //Main Cells
+                                                            ...List.generate(filterdata.first.keys.length, (cellIndex) {
+                                                              cellIndec++;
+                                                              String cellName = filterdata.first.keys.toList()[cellIndex].toString();
+                                                              if ((widget.hiddenDataColumns ?? []).contains(cellName)) {
+                                                                return Container();
+                                                              }
+                                                              return DataGridViewCell(
+                                                                rowIndex: rowIndex,
+                                                                text:
+                                                                    widget.cellFormat == null
+                                                                        ? filterdata[rowIndex][cellName].toString().trim()
+                                                                        : widget.cellFormat!(rowIndex, cellName, filterdata[rowIndex][cellName]),
+                                                                color: null,
+                                                                cellHeight: rheight,
+                                                                cellWidth: (columnWidths[cellName] ?? widget.defaultColumnWidth) + 25,
+                                                                visible: !(widget.hiddenDataColumns ?? []).contains(cellName),
+                                                                extraCellheight: _extraCellPadding,
+                                                                style: TextStyle(fontSize: widget.cellFontSize, color: widget.textColor),
+                                                                alignment: widget.dataColumnAlignments?[cellName] ?? widget.cellAlignment,
+                                                                padding: widget.cellPadding,
+                                                              );
+                                                            }).map((e) => widget.hideHorizontalScroll ? Expanded(child: e) : e),
+                                                            //Additional Columns Right Cells
+                                                            ...(widget.additonalColumnsRight ?? []).map((e) {
+                                                              cellIndec++;
+                                                              return DataGridViewCell(
+                                                                rowIndex: rowIndex,
+                                                                text: e.cellText == null ? "" : (e.cellText!(rowIndex) ?? ""),
+                                                                color: null,
+                                                                toolTip: e.toolTip,
+                                                                cellHeight: rheight,
+                                                                cellWidth: e.columnWidth ?? widget.defaultColumnWidth,
+                                                                onCellPressed:
+                                                                    e.onCellPressed == null
+                                                                        ? null
+                                                                        : () {
+                                                                          if (e.onCellPressed != null) {
+                                                                            e.onCellPressed!(
+                                                                              rowIndex,
+                                                                              cellIndec,
+                                                                              (e.onClickReturnFieldNames ?? [])
+                                                                                  .map((cellname) => filterdata[rowIndex][cellname])
+                                                                                  .toList(),
+                                                                            );
+                                                                          }
+                                                                        },
+                                                                columnType: e.columnType,
+                                                                iconData: e.iconData,
+                                                                extraCellheight: _extraCellPadding,
+                                                                style: TextStyle(fontSize: widget.cellFontSize, color: widget.textColor),
+                                                                alignment: widget.dataColumnAlignments?[e.columnName ?? ""] ?? widget.cellAlignment,
+                                                                padding: widget.cellPadding,
+                                                              );
+                                                            }),
 
-                                                          //Right hand side scrollbar leave space
-                                                        ],
+                                                            //Right hand side scrollbar leave space
+                                                          ],
+                                                        ),
                                                       ),
-                                                    ),
-                                                  );
+                                                    );
 
-                                                  // List<Widget> ll = [];
+                                                    // List<Widget> ll = [];
 
-                                                  // ll.addAll(List.generate(
-                                                  //     , (rowIndex_) {
-                                                  //   }));
-                                                  // //Last Row
-                                                  // ll.add();
-                                                  // return ll;
-                                                },
+                                                    // ll.addAll(List.generate(
+                                                    //     , (rowIndex_) {
+                                                    //   }));
+                                                    // //Last Row
+                                                    // ll.add();
+                                                    // return ll;
+                                                  },
+                                                ),
                                               ),
                                             ),
                                           ),
                                         ),
                                       ),
-                                    ),
 
-                                    //Verical scroll spacer
-                                    Container(
-                                      // color: Colors.green.withOpacity(0.1),
-                                      width: scrollBarThickness + 3,
-                                      child: ScrollConfiguration(
-                                        behavior: ScrollConfiguration.of(context).copyWith(scrollbars: !widget.hideHorizontalScroll),
-                                        child: Scrollbar(
-                                          controller: verticalScrollbarController,
-                                          thumbVisibility: isScrollVisible,
-                                          thickness: scrollBarThickness,
-                                          child: ScrollConfiguration(
-                                            behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
-                                            child: ListView(
-                                              controller: verticalScrollbarController,
-                                              physics: const AlwaysScrollableScrollPhysics(),
-                                              children: List.generate(min(filterdata.length - (currentPageNumber * widget.itemsPerPage), widget.itemsPerPage),
-                                                      (rowIndex_) {
-                                                    var rowIndex = (currentPageNumber * widget.itemsPerPage) + rowIndex_;
-                                                    return SizedBox(
-                                                      height: (rowHeights[rowIndex] ?? widget.defaultRowHeight),
-                                                      // height: (rowHeights[rowIndex] ?? widget.defaultRowHeight) +
-                                                      //     (_extraCellPadding * 2),
-                                                    );
-                                                  }) +
-                                                  [
-                                                    SizedBox(
-                                                      width: ((!widget.hideHorizontalScroll) ? scrollBarThickness : 0),
-                                                      height: scrollBarThickness + 3,
-                                                    )
-                                                  ],
+                                      //Verical scroll spacer
+                                      Container(
+                                        // color: Colors.green.withOpacity(0.1),
+                                        width: scrollBarThickness + 3,
+                                        child: ScrollConfiguration(
+                                          behavior: ScrollConfiguration.of(context).copyWith(scrollbars: !widget.hideHorizontalScroll),
+                                          child: Scrollbar(
+                                            controller: verticalScrollbarController,
+                                            thumbVisibility: isScrollVisible,
+                                            thickness: scrollBarThickness,
+                                            child: ScrollConfiguration(
+                                              behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+                                              child: ListView(
+                                                controller: verticalScrollbarController,
+                                                physics: const AlwaysScrollableScrollPhysics(),
+                                                children:
+                                                    List.generate(min(filterdata.length - (currentPageNumber * widget.itemsPerPage), widget.itemsPerPage), (
+                                                      rowIndex_,
+                                                    ) {
+                                                      var rowIndex = (currentPageNumber * widget.itemsPerPage) + rowIndex_;
+                                                      return SizedBox(
+                                                        height: (rowHeights[rowIndex] ?? widget.defaultRowHeight),
+                                                        // height: (rowHeights[rowIndex] ?? widget.defaultRowHeight) +
+                                                        //     (_extraCellPadding * 2),
+                                                      );
+                                                    }) +
+                                                    [
+                                                      SizedBox(
+                                                        width: ((!widget.hideHorizontalScroll) ? scrollBarThickness : 0),
+                                                        height: scrollBarThickness + 3,
+                                                      ),
+                                                    ],
+                                              ),
                                             ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
+                            // DataGridViewBody(
+                            //   scrollController: _bodyController,
+                            //   cellWidth: widget.defaultColumnWidth,
+                            //   cellHeight: widget.defaultRowHeight,
+                            //   defaultRowHeaderWidth: widget.defaultRowHeaderWidth,
+                            //   autoGenerateColumns: widget.autoGenerateColumns,
+                            //   columns: widget.columns,
+                            //   data: filterdata,
+                            //   isRowHeader: widget.isRowheader,
+                            // ),
                           ),
-                          // DataGridViewBody(
-                          //   scrollController: _bodyController,
-                          //   cellWidth: widget.defaultColumnWidth,
-                          //   cellHeight: widget.defaultRowHeight,
-                          //   defaultRowHeaderWidth: widget.defaultRowHeaderWidth,
-                          //   autoGenerateColumns: widget.autoGenerateColumns,
-                          //   columns: widget.columns,
-                          //   data: filterdata,
-                          //   isRowHeader: widget.isRowheader,
-                          // ),
-                        ),
-                        //Footer
-                        if (widget.isFooter)
-                          SizedBox(
-                            height: widget.defaultRowHeight + 10,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.max,
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                //Row Header Column Footer
-                                widget.isRowheader
-                                    ? DataGridViewCell(
+                          //Footer
+                          if (widget.isFooter)
+                            SizedBox(
+                              height: widget.defaultRowHeight + 10,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.max,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  //Row Header Column Footer
+                                  widget.isRowheader
+                                      ? DataGridViewCell(
                                         rowIndex: -1,
                                         color: widget.columnHeaderColor,
                                         text: "",
@@ -901,99 +864,95 @@ class _DataGridViewState extends State<DataGridView> {
                                         alignment: widget.cellAlignment,
                                         padding: widget.cellPadding,
                                       )
-                                    : Container(),
-                                //Column Footer
-                                Expanded(
-                                  child: SingleChildScrollView(
-                                    controller: footerVerticalController,
-                                    physics: const AlwaysScrollableScrollPhysics(),
-                                    scrollDirection: Axis.horizontal,
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: widget.columnHeaderColor,
-                                        borderRadius: BorderRadius.circular(5),
-                                      ),
-                                      clipBehavior: Clip.antiAlias,
-                                      child: Row(
-                                        children: [
-                                          ...(widget.additonalColumnsLeft ?? []).map(
-                                            (e) => DataGridViewCell(
-                                              rowIndex: -1,
-                                              // color: widget.columnHeaderColor,
-                                              text: "",
-                                              cellWidth: e.columnWidth ?? widget.defaultColumnWidth,
-                                              cellHeight: widget.defaultRowHeight,
-                                              style: TextStyle(
-                                                // fontWeight: FontWeight.bold,
-                                                fontSize: widget.headerFontSize,
-                                                color: widget.headerTextColor ?? widget.textColor,
+                                      : Container(),
+                                  //Column Footer
+                                  Expanded(
+                                    child: SingleChildScrollView(
+                                      controller: footerVerticalController,
+                                      physics: const AlwaysScrollableScrollPhysics(),
+                                      scrollDirection: Axis.horizontal,
+                                      child: Container(
+                                        decoration: BoxDecoration(color: widget.columnHeaderColor, borderRadius: BorderRadius.circular(5)),
+                                        clipBehavior: Clip.antiAlias,
+                                        child: Row(
+                                          children: [
+                                            ...(widget.additonalColumnsLeft ?? []).map(
+                                              (e) => DataGridViewCell(
+                                                rowIndex: -1,
+                                                // color: widget.columnHeaderColor,
+                                                text: "",
+                                                cellWidth: e.columnWidth ?? widget.defaultColumnWidth,
+                                                cellHeight: widget.defaultRowHeight,
+                                                style: TextStyle(
+                                                  // fontWeight: FontWeight.bold,
+                                                  fontSize: widget.headerFontSize,
+                                                  color: widget.headerTextColor ?? widget.textColor,
+                                                ),
+                                                extraCellheight: _extraCellPadding,
+                                                alignment: widget.dataColumnAlignments?[e.columnName ?? ""] ?? widget.cellAlignment,
+                                                padding: widget.footerPadding,
                                               ),
-                                              extraCellheight: _extraCellPadding,
-                                              alignment: widget.dataColumnAlignments?[e.columnName ?? ""] ?? widget.cellAlignment,
-                                              padding: widget.footerPadding,
                                             ),
-                                          ),
-                                          ...(widget.data.isEmpty
-                                              ? []
-                                              : widget.data.first.keys.map(
-                                                  (fieldname) {
-                                                    return DataGridViewCell(
-                                                      rowIndex: -1,
-                                                      // color: widget.columnHeaderColor,
-                                                      text: ((widget.footerData ?? {})[fieldname] ?? ""),
-                                                      cellWidth: (columnWidths[fieldname] ?? widget.defaultColumnWidth) + 25,
-                                                      visible: !(widget.hiddenDataColumns ?? []).contains(fieldname),
-                                                      cellHeight: widget.defaultRowHeight,
-                                                      style: TextStyle(
-                                                        // fontWeight: FontWeight.bold,
-                                                        fontSize: widget.headerFontSize,
-                                                        color: widget.headerTextColor ?? widget.textColor,
-                                                      ),
-                                                      extraCellheight: _extraCellPadding,
-                                                      alignment: widget.dataColumnAlignments?[fieldname] ?? widget.cellAlignment,
-                                                      padding: widget.footerPadding,
-                                                    );
-                                                  },
-                                                )),
-                                          ...(widget.additonalColumnsRight ?? []).map(
-                                            (e) => DataGridViewCell(
-                                              rowIndex: -1,
-                                              // color: widget.columnHeaderColor,
-                                              text: "",
-                                              cellWidth: e.columnWidth ?? widget.defaultColumnWidth,
-                                              cellHeight: widget.defaultRowHeight,
-                                              style: TextStyle(
-                                                // fontWeight: FontWeight.bold,
-                                                fontSize: widget.headerFontSize,
-                                                color: widget.textColor,
+                                            ...(widget.data.isEmpty
+                                                ? []
+                                                : widget.data.first.keys.map((fieldname) {
+                                                  return DataGridViewCell(
+                                                    rowIndex: -1,
+                                                    // color: widget.columnHeaderColor,
+                                                    text: ((widget.footerData ?? {})[fieldname] ?? ""),
+                                                    cellWidth: (columnWidths[fieldname] ?? widget.defaultColumnWidth) + 25,
+                                                    visible: !(widget.hiddenDataColumns ?? []).contains(fieldname),
+                                                    cellHeight: widget.defaultRowHeight,
+                                                    style: TextStyle(
+                                                      // fontWeight: FontWeight.bold,
+                                                      fontSize: widget.headerFontSize,
+                                                      color: widget.headerTextColor ?? widget.textColor,
+                                                    ),
+                                                    extraCellheight: _extraCellPadding,
+                                                    alignment: widget.dataColumnAlignments?[fieldname] ?? widget.cellAlignment,
+                                                    padding: widget.footerPadding,
+                                                  );
+                                                })),
+                                            ...(widget.additonalColumnsRight ?? []).map(
+                                              (e) => DataGridViewCell(
+                                                rowIndex: -1,
+                                                // color: widget.columnHeaderColor,
+                                                text: "",
+                                                cellWidth: e.columnWidth ?? widget.defaultColumnWidth,
+                                                cellHeight: widget.defaultRowHeight,
+                                                style: TextStyle(
+                                                  // fontWeight: FontWeight.bold,
+                                                  fontSize: widget.headerFontSize,
+                                                  color: widget.textColor,
+                                                ),
+                                                extraCellheight: _extraCellPadding,
+                                                alignment: widget.headerAlignment,
+                                                padding: widget.footerPadding,
                                               ),
-                                              extraCellheight: _extraCellPadding,
-                                              alignment: widget.headerAlignment,
-                                              padding: widget.footerPadding,
                                             ),
-                                          ),
-                                          SizedBox(width: scrollBarThickness),
-                                        ],
+                                            SizedBox(width: scrollBarThickness),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                                //Right hand side scrollbar leave space
-                                // SizedBox(width: scrollBarThickness),
-                              ],
+                                  //Right hand side scrollbar leave space
+                                  // SizedBox(width: scrollBarThickness),
+                                ],
+                              ),
                             ),
-                          ),
-                      ],
-                    ),
-                  // Align(
-                  //     alignment: Alignment.topLeft,
-                  //     child: Text(
-                  //       contrains.maxWidth.toString() + " - " + columnWidths.values.sum.toString(),
-                  //       style: TextStyle(color: Colors.green, fontSize: 8),
-                  //     )),
-                ],
-              );
-            }),
+                        ],
+                      ),
+                    // Align(
+                    //     alignment: Alignment.topLeft,
+                    //     child: Text(
+                    //       contrains.maxWidth.toString() + " - " + columnWidths.values.sum.toString(),
+                    //       style: TextStyle(color: Colors.green, fontSize: 8),
+                    //     )),
+                  ],
+                );
+              },
+            ),
           ),
           // DataGridViewHeader(
           //   scrollController: _footController,
@@ -1032,9 +991,7 @@ class _DataGridViewState extends State<DataGridView> {
                               });
                             },
                             style: IconButton.styleFrom(backgroundColor: index == currentPageNumber ? Colors.red : null),
-                            icon: Text(
-                              (index + 1).toString(),
-                            ),
+                            icon: Text((index + 1).toString()),
                           ),
                         ),
                       ],
@@ -1083,27 +1040,11 @@ class _DataGridViewState extends State<DataGridView> {
         if (sortData.containsKey(fieldname))
           const PopupMenuItem(
             value: 3,
-            child: Row(
-              children: [
-                SizedBox(width: 25),
-                SizedBox(width: 5),
-                Icon(Icons.sort_by_alpha_outlined),
-                SizedBox(width: 5),
-                Text("Reset Sort"),
-              ],
-            ),
+            child: Row(children: [SizedBox(width: 25), SizedBox(width: 5), Icon(Icons.sort_by_alpha_outlined), SizedBox(width: 5), Text("Reset Sort")]),
           ),
         const PopupMenuItem(
           value: 4,
-          child: Row(
-            children: [
-              SizedBox(width: 25),
-              SizedBox(width: 5),
-              Icon(Icons.filter_alt),
-              SizedBox(width: 5),
-              Text("Filter"),
-            ],
-          ),
+          child: Row(children: [SizedBox(width: 25), SizedBox(width: 5), Icon(Icons.filter_alt), SizedBox(width: 5), Text("Filter")]),
         ),
       ],
       elevation: 8.0,
@@ -1153,62 +1094,66 @@ class _DataGridViewState extends State<DataGridView> {
     showDialog(
       context: context,
       builder: (context) {
-        return StatefulBuilder(builder: (context, setState) {
-          return AlertDialog(
-            title: Column(
-              children: [
-                Text(columnName),
-                const Divider(),
-              ],
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                children: discintValues
-                    .map((e) => Row(
-                          children: [
-                            Checkbox(
-                                value: selectedValues[e] ?? true,
-                                onChanged: (value) {
-                                  if (value ?? true) {
-                                    selectedValues.remove(e);
-                                  } else {
-                                    selectedValues.addAll({e: false});
-                                  }
-                                  // selectedValues[e] = value ?? true;
-                                  setState(() {});
-                                }),
-                            Text(e),
-                          ],
-                        ))
-                    .toList(),
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Column(children: [Text(columnName), const Divider()]),
+              content: SingleChildScrollView(
+                child: Column(
+                  children:
+                      discintValues
+                          .map(
+                            (e) => Row(
+                              children: [
+                                Checkbox(
+                                  value: selectedValues[e] ?? true,
+                                  onChanged: (value) {
+                                    if (value ?? true) {
+                                      selectedValues.remove(e);
+                                    } else {
+                                      selectedValues.addAll({e: false});
+                                    }
+                                    // selectedValues[e] = value ?? true;
+                                    setState(() {});
+                                  },
+                                ),
+                                Text(e),
+                              ],
+                            ),
+                          )
+                          .toList(),
+                ),
               ),
-            ),
-            actions: [
-              ElevatedButton(
+              actions: [
+                ElevatedButton(
                   onPressed: () {
                     discintValues.forEach((key) {
                       selectedValues = {};
                       setState(() {});
                     });
                   },
-                  child: const Text("Select All")),
-              ElevatedButton(
+                  child: const Text("Select All"),
+                ),
+                ElevatedButton(
                   onPressed: () {
                     discintValues.forEach((key) {
                       selectedValues.addAll({key: false});
                       setState(() {});
                     });
                   },
-                  child: const Text("Select None")),
-              ElevatedButton(
+                  child: const Text("Select None"),
+                ),
+                ElevatedButton(
                   onPressed: () {
                     filterIinfo[columnName] == null ? filterIinfo.addAll({columnName: selectedValues}) : filterIinfo[columnName] = selectedValues;
                     Navigator.pop(context, "APPLY");
                   },
-                  child: const Text("Apply Filter")),
-            ],
-          );
-        });
+                  child: const Text("Apply Filter"),
+                ),
+              ],
+            );
+          },
+        );
       },
     ).then((value) {
       if (value == "APPLY") {

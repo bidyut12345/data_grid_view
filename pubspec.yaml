@@ -12,7 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
   collection: ^1.19.1
-  file_picker: ^10.3.7
+  file_picker: ^10.3.10
   file_selector: ^1.0.3
   # intl: ^0.20.2
   intl: ^0.20.2

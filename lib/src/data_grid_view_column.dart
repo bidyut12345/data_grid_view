@@ -28,7 +28,7 @@ class DataGridViewColumn {
   final List<String>? onClickReturnFieldNames;
   final IconData? iconData;
   final ButtonStyle? elevatedButtonStyle;
-  final Function(int rowIndex, int cellIndex, List<dynamic>? returnValue)? onCellPressed;
+  final Function(int rowIndex, int cellIndex, List<dynamic>? returnValue, BuildContext context)? onCellPressed;
   final ColumnType columnType;
   final String? columnName;
 }

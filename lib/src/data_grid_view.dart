@@ -164,11 +164,11 @@ class _DataGridViewState extends State<DataGridView> {
         sortData = {};
         filterIinfo = {};
       };
-      widget.controller?.generatePdf = ({String fileName = "Report.pdf", double scale = 1.0, String reportHeaderText = "Report"}) {
-        _generatePDF(fileName: fileName, scale: scale, reportHeaderText: reportHeaderText);
+      widget.controller?.generatePdf = ({String fileName = "Report.pdf", double scale = 1.0, String reportHeaderText = "Report"}) async {
+        await _generatePDF(fileName: fileName, scale: scale, reportHeaderText: reportHeaderText);
       };
-      widget.controller?.generateXls = ({String fileName = "Report.xlsx", String reportHeaderText = "Report"}) {
-        _generateXls(fileName: fileName, reportHeaderText: reportHeaderText);
+      widget.controller?.generateXls = ({String fileName = "Report.xlsx", String reportHeaderText = "Report"}) async {
+        await _generateXls(fileName: fileName, reportHeaderText: reportHeaderText);
       };
       widget.controller?.printPreview = ({double scale = 1.0, String reportHeaderText = "Report", String reportSubHeaderText = ""}) {
         _printPreview(scale: scale, reportHeaderText: reportHeaderText, reportSubHeaderText: reportSubHeaderText);
@@ -212,8 +212,8 @@ class _DataGridViewState extends State<DataGridView> {
   String reporttitle = "";
   String reportsubtitle = "";
   double previewScale = 1.0;
-  _generateXls({String fileName = "Report.xlsx", String reportHeaderText = "Report"}) {
-    generateExcel(filterdata, fileName, reportHeaderText);
+  Future _generateXls({String fileName = "Report.xlsx", String reportHeaderText = "Report"}) async {
+    await generateExcel(filterdata, fileName, reportHeaderText, widget.hiddenDataColumns, widget.footerData);
   }
 
   Map<String, double> columnWidths = {};
@@ -437,7 +437,7 @@ class _DataGridViewState extends State<DataGridView> {
                       child: ElevatedButton(
                         child: const Text("Generate Excel"),
                         onPressed: () async {
-                          _generateXls();
+                          await _generateXls();
                         },
                       ),
                     )

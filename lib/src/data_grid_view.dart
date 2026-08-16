@@ -279,9 +279,9 @@ class _DataGridViewState extends State<DataGridView> {
     //   );
     // }
     if (isMobileView) {
-      return ListView.separated(
+      return ListView.builder(
         itemCount: widget.data.length,
-        separatorBuilder: (context, index) => const Divider(height: 1),
+        // separatorBuilder: (context, index) => const Divider(height: 1),
         itemBuilder: (context, rowIndex) {
           var actions = (widget.additonalColumnsLeft
                       ?.where((element) => element.columnType == ColumnType.iconButtonColumn)
@@ -675,7 +675,22 @@ class _DataGridViewState extends State<DataGridView> {
                                                             ...(widget.additonalColumnsLeft ?? []).map((e) {
                                                               cellIndec++;
                                                               return (e.cellWidget != null)
-                                                                  ? SizedBox(width: e.columnWidth ?? widget.defaultColumnWidth, child: e.cellWidget!(rowIndex))
+                                                                  ? Container(
+                                                                      // color: Colors.red,
+                                                                      decoration: BoxDecoration(
+                                                                        // color: Colors.red,
+                                                                        color: rowIndex >= 0 && rowIndex % 2 == 1
+                                                                            ? const Color.fromARGB(255, 129, 129, 129).withOpacity(0.07)
+                                                                            : null,
+                                                                        border: const Border.symmetric(
+                                                                          horizontal: BorderSide(
+                                                                            color: Colors.grey,
+                                                                            width: 0.1,
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                      width: e.columnWidth ?? widget.defaultColumnWidth,
+                                                                      child: e.cellWidget!(rowIndex))
                                                                   : DataGridViewCell(
                                                                       rowIndex: rowIndex,
                                                                       text: e.cellText == null ? "" : (e.cellText!(rowIndex) ?? ""),

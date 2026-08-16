@@ -57,9 +57,7 @@ class DataGridViewCell extends StatelessWidget {
               height: cellHeight,
               decoration: BoxDecoration(
                 // color: Colors.red,
-                color: rowIndex >= 0 && rowIndex % 2 == 1
-                    ? const Color.fromARGB(255, 129, 129, 129).withOpacity(0.07)
-                    : null,
+                color: rowIndex >= 0 && rowIndex % 2 == 1 ? const Color.fromARGB(255, 129, 129, 129).withOpacity(0.07) : null,
                 border: const Border.symmetric(
                   horizontal: BorderSide(
                     color: Colors.grey,
@@ -98,11 +96,9 @@ class DataGridViewCell extends StatelessWidget {
                                                 fontSize: 14.0,
                                                 color: Color.fromARGB(255, 39, 39, 39),
                                               ),
-                                          textAlign: ([Alignment.bottomCenter, Alignment.topCenter, Alignment.center]
-                                                  .contains(alignment))
+                                          textAlign: ([Alignment.bottomCenter, Alignment.topCenter, Alignment.center].contains(alignment))
                                               ? TextAlign.center
-                                              : ([Alignment.topLeft, Alignment.bottomLeft, Alignment.centerLeft]
-                                                      .contains(alignment))
+                                              : ([Alignment.topLeft, Alignment.bottomLeft, Alignment.centerLeft].contains(alignment))
                                                   ? TextAlign.left
                                                   : TextAlign.right,
                                         ),
@@ -119,8 +115,7 @@ class DataGridViewCell extends StatelessWidget {
                                 style: ButtonStyle(
                                   backgroundColor: MaterialStateProperty.all(Colors.grey.withOpacity(0.5)),
                                   padding: MaterialStateProperty.all(const EdgeInsets.all(2)),
-                                  shape: MaterialStateProperty.all(
-                                      RoundedRectangleBorder(borderRadius: BorderRadius.circular(3))),
+                                  shape: MaterialStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(3))),
                                 ),
                                 onPressed: () {
                                   if (onCellPressed != null) onCellPressed!();
@@ -136,14 +131,9 @@ class DataGridViewCell extends StatelessWidget {
                                           : Text(
                                               text == "null" ? "" : text,
                                               style: style ?? const TextStyle(fontSize: 16.0, color: Colors.black),
-                                              textAlign: ([
-                                                Alignment.bottomCenter,
-                                                Alignment.topCenter,
-                                                Alignment.center
-                                              ].contains(alignment))
+                                              textAlign: ([Alignment.bottomCenter, Alignment.topCenter, Alignment.center].contains(alignment))
                                                   ? TextAlign.center
-                                                  : ([Alignment.topLeft, Alignment.bottomLeft, Alignment.centerLeft]
-                                                          .contains(alignment))
+                                                  : ([Alignment.topLeft, Alignment.bottomLeft, Alignment.centerLeft].contains(alignment))
                                                       ? TextAlign.left
                                                       : TextAlign.right,
                                             ),

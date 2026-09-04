@@ -26,7 +26,7 @@ List<Widget> headerCells(
               ),
               isHeader: true,
               extraCellheight: extraCellPadding,
-              alignment: widget.headerAlignment,
+              alignment: e.headeralignment ?? widget.headerAlignment,
               padding: widget.headerPadding,
             ),
           )
@@ -94,7 +94,7 @@ List<Widget> headerCells(
               ),
               onCellPressed: () {},
               extraCellheight: extraCellPadding,
-              alignment: widget.headerAlignment,
+              alignment: e.headeralignment ?? widget.headerAlignment,
               padding: widget.headerPadding,
             ),
           )

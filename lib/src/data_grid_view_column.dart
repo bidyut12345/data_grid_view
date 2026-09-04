@@ -17,6 +17,8 @@ class DataGridViewColumn {
     this.elevatedButtonStyle,
     this.columnType = ColumnType.textColumn,
     this.cellWidget,
+    this.alignment,
+    this.headeralignment,
   });
   final double? columnWidth;
   final double? columnHeight;
@@ -31,4 +33,6 @@ class DataGridViewColumn {
   final Function(int rowIndex, int cellIndex, List<dynamic>? returnValue, BuildContext context)? onCellPressed;
   final ColumnType columnType;
   final String? columnName;
+  final Alignment? alignment;
+  final Alignment? headeralignment;
 }

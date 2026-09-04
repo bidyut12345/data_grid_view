@@ -50,7 +50,9 @@ Map<int, dynamic> generateColumnWidthAndRowHeight(
         style = TextStyle(fontSize: widget.cellFontSize);
         for (int i = 0; i < filterdata.length; i++) {
           Map<String, dynamic> rowData = filterdata[i];
-          var text = widget.cellFormat == null ? rowData[fieldname].toString().trim() : widget.cellFormat!(i, fieldname, rowData[fieldname]);
+          var text = widget.cellFormat == null
+              ? rowData[fieldname].toString().trim()
+              : widget.cellFormat!(i, fieldname, rowData[fieldname]);
           textPainter = TextPainter()
             ..text = TextSpan(text: text, style: style)
             ..textDirection = TextDirection.ltr
@@ -80,7 +82,8 @@ Map<int, dynamic> generateColumnWidthAndRowHeight(
           ..textDirection = TextDirection.ltr
           ..layout(minWidth: 0, maxWidth: maxFieldWidth - (additonalWidth)); //widget.maxColumnWidth
 
-        if (headerHeight < (textPainter.height + additionalHeight + widget.headerPadding.top + widget.headerPadding.bottom) &&
+        if (headerHeight <
+                (textPainter.height + additionalHeight + widget.headerPadding.top + widget.headerPadding.bottom) &&
             (textPainter.height + additionalHeight) > widget.defaultRowHeight) {
           headerHeight = textPainter.height + additionalHeight + widget.headerPadding.top + widget.headerPadding.bottom;
         }
@@ -115,7 +118,9 @@ Map<int, dynamic> generateColumnWidthAndRowHeight(
           TextStyle style = TextStyle(fontSize: widget.cellFontSize);
           for (int i = 0; i < filterdata.length; i++) {
             Map<String, dynamic> rowData = filterdata[i];
-            var text = widget.cellFormat == null ? rowData[fieldname].toString().trim() : widget.cellFormat!(i, fieldname, rowData[fieldname]);
+            var text = widget.cellFormat == null
+                ? rowData[fieldname].toString().trim()
+                : widget.cellFormat!(i, fieldname, rowData[fieldname]);
             TextPainter textPainter = TextPainter()
               ..text = TextSpan(text: text, style: style)
               ..textDirection = TextDirection.ltr
@@ -124,7 +129,11 @@ Map<int, dynamic> generateColumnWidthAndRowHeight(
 
             if ((rowHeights[i] ?? widget.defaultRowHeight) < (textPainter.height + additionalHeight) &&
                 (textPainter.height + additionalHeight) > widget.defaultRowHeight) {
-              rowHeights[i] = textPainter.height + additionalHeight;
+              if (textPainter.height + additionalHeight > widget.maxRowHeight) {
+                rowHeights[i] = widget.maxRowHeight;
+              } else {
+                rowHeights[i] = textPainter.height + additionalHeight;
+              }
             }
           }
           style = TextStyle(fontSize: widget.headerFontSize);
@@ -133,9 +142,11 @@ Map<int, dynamic> generateColumnWidthAndRowHeight(
             ..textDirection = TextDirection.ltr
             ..layout(minWidth: 0, maxWidth: maxFieldWidth); //widget.maxColumnWidth
 
-          if (headerHeight < (textPainter.height + additionalHeight + widget.headerPadding.top + widget.headerPadding.bottom) &&
+          if (headerHeight <
+                  (textPainter.height + additionalHeight + widget.headerPadding.top + widget.headerPadding.bottom) &&
               (textPainter.height + additionalHeight) > widget.defaultRowHeight) {
-            headerHeight = textPainter.height + additionalHeight + widget.headerPadding.top + widget.headerPadding.bottom;
+            headerHeight =
+                textPainter.height + additionalHeight + widget.headerPadding.top + widget.headerPadding.bottom;
           }
         }
       }

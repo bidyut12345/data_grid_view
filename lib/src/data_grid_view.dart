@@ -72,6 +72,7 @@ class DataGridView extends StatefulWidget {
     this.hideHorizontalScroll = false,
     this.scrollbarAboveContent = true,
     this.itemsPerPage = 250,
+    this.mobileItemsPerPage = 50,
     this.onRowClick,
     this.cellFormat,
     this.mobileRowBuilder,
@@ -124,6 +125,7 @@ class DataGridView extends StatefulWidget {
   final bool hideHorizontalScroll;
   final bool scrollbarAboveContent;
   final int itemsPerPage;
+  final int? mobileItemsPerPage;
   final Function(int rowIndex, Map<String, dynamic>)? onRowClick;
   final String Function(int rowIndex, String fieldName, dynamic value)? cellFormat;
 
@@ -144,8 +146,21 @@ class _DataGridViewState extends State<DataGridView> {
   late ScrollController listViewVerticalController;
   late ScrollController verticalScrollbarController;
 
+  final ScrollController _mobileScrollController = ScrollController();
+
   List<Map<String, dynamic>> filterdata = [];
   bool isMobileView = false;
+
+  int get currentItemsPerPage {
+    if (isMobileView) {
+      if (widget.mobileItemsPerPage != null) {
+        return widget.mobileItemsPerPage!;
+      }
+      return widget.itemsPerPage > 50 ? 50 : widget.itemsPerPage;
+    }
+    return widget.itemsPerPage;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -228,19 +243,11 @@ class _DataGridViewState extends State<DataGridView> {
   Map<int, double> rowHeights = {};
   double headerHeight = 0;
 
-  // @override
-  // void dispose() {
-  //   if (!widget.isHtmlView) {
-  //     columnHeaderVerticalController.dispose();
-  //     rowsVerticalController.dispose();
-  //     footerVerticalController.dispose();
-  //     rowHeaderVerticalController.dispose();
-  //     listViewVerticalController.dispose();
-  //     verticalScrollbarController.dispose();
-  //   }
-
-  //   super.dispose();
-  // }
+  @override
+  void dispose() {
+    _mobileScrollController.dispose();
+    super.dispose();
+  }
 
   bool showPrintPreview = false;
   @override
@@ -287,101 +294,78 @@ class _DataGridViewState extends State<DataGridView> {
     //   );
     // }
     if (isMobileView) {
-      return ListView.builder(
-        itemCount: widget.data.length,
-        // separatorBuilder: (context, index) => const Divider(height: 1),
-        itemBuilder: (context, rowIndex) {
-          var actions = (widget.additonalColumnsLeft
-                      ?.where((element) => element.columnType == ColumnType.iconButtonColumn)
-                      .map(
-                        (e) => IconButton.outlined(
-                          icon: Icon(e.iconData),
-                          onPressed: () {
-                            if (e.onCellPressed != null) {
-                              e.onCellPressed!(
-                                  rowIndex,
-                                  0,
-                                  (e.onClickReturnFieldNames ?? [])
-                                      .map((cellname) => filterdata[rowIndex][cellname])
-                                      .toList(),
-                                  context);
-                            }
-                          },
-                        ),
-                      )
-                      .toList() ??
-                  []) +
-              (widget.additonalColumnsRight
-                      ?.map(
-                        (e) => IconButton.outlined(
-                          icon: Icon(e.iconData),
-                          onPressed: () {
-                            if (e.onCellPressed != null) {
-                              e.onCellPressed!(
-                                  rowIndex,
-                                  0,
-                                  (e.onClickReturnFieldNames ?? [])
-                                      .map((cellname) => filterdata[rowIndex][cellname])
-                                      .toList(),
-                                  context);
-                            }
-                          },
-                        ),
-                      )
-                      .toList() ??
-                  []);
-          var row = widget.data[rowIndex];
-          if (widget.mobileRowBuilder != null) {
-            return widget.mobileRowBuilder!(rowIndex, filterdata[rowIndex], actions);
-          } else {
-            return ListTile(
-              dense: true,
-              onTap: () {},
-              title: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      children: row.keys.map((e) {
-                        var str = row[e].toString();
-                        if (str == "null") {
-                          str = "";
-                        }
-                        if (widget.hiddenDataColumns?.contains(e) ?? false) {
-                          return Container();
-                        }
-                        return Row(
-                          children: [
-                            Expanded(
-                                flex: 3,
-                                child: Text(widget.dataColumnHeadertexts?[e] ?? e,
-                                    style: const TextStyle(fontWeight: FontWeight.bold))),
-                            Expanded(flex: 5, child: Text(str)),
-                          ],
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                  Column(children: actions.map((e) => Padding(padding: EdgeInsets.all(2), child: e)).toList()),
-                ],
-              ),
-            );
-          }
-        },
-      );
-    }
-    if (isMobileView && false) {
-      int rowIndex = -1;
-      return SingleChildScrollView(
-        child: Column(
-          children: widget.data.map((row) {
-            rowIndex++;
-            return Padding(
-              padding: const EdgeInsets.all(10),
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Column(
-                    children: row.keys.map((e) {
+      final int perPage = currentItemsPerPage;
+      final int totalItems = filterdata.length;
+      final int totalPages = (totalItems <= 0 || perPage <= 0) ? 1 : (totalItems / perPage).ceil();
+      if (currentPageNumber >= totalPages) {
+        currentPageNumber = 0;
+      }
+      final int startIndex = currentPageNumber * perPage;
+      final int endIndex = min(startIndex + perPage, totalItems);
+      final int pageItemCount = max(0, endIndex - startIndex);
+
+      return showPages(
+        child: ListView.builder(
+          controller: _mobileScrollController,
+          itemCount: pageItemCount,
+          // separatorBuilder: (context, index) => const Divider(height: 1),
+          itemBuilder: (context, indexInPage) {
+            final int rowIndex = startIndex + indexInPage;
+            final row = filterdata[rowIndex];
+            var actions = (widget.additonalColumnsLeft
+                        ?.where((element) => element.columnType == ColumnType.iconButtonColumn)
+                        .map(
+                          (e) => IconButton.outlined(
+                            icon: Icon(e.iconData),
+                            onPressed: () {
+                              if (e.onCellPressed != null) {
+                                e.onCellPressed!(
+                                    rowIndex,
+                                    0,
+                                    (e.onClickReturnFieldNames ?? [])
+                                        .map((cellname) => filterdata[rowIndex][cellname])
+                                        .toList(),
+                                    context);
+                              }
+                            },
+                          ),
+                        )
+                        .toList() ??
+                    []) +
+                (widget.additonalColumnsRight
+                        ?.map(
+                          (e) => IconButton.outlined(
+                            icon: Icon(e.iconData),
+                            onPressed: () {
+                              if (e.onCellPressed != null) {
+                                e.onCellPressed!(
+                                    rowIndex,
+                                    0,
+                                    (e.onClickReturnFieldNames ?? [])
+                                        .map((cellname) => filterdata[rowIndex][cellname])
+                                        .toList(),
+                                    context);
+                              }
+                            },
+                          ),
+                        )
+                        .toList() ??
+                    []);
+            if (widget.mobileRowBuilder != null) {
+              return widget.mobileRowBuilder!(rowIndex, row, actions);
+            } else {
+              return ListTile(
+                dense: true,
+                onTap: () {
+                  if (widget.onRowClick != null) {
+                    widget.onRowClick!(rowIndex, row);
+                  }
+                },
+                title: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        children: row.keys.map((e) {
                           var str = row[e].toString();
                           if (str == "null") {
                             str = "";
@@ -391,48 +375,22 @@ class _DataGridViewState extends State<DataGridView> {
                           }
                           return Row(
                             children: [
-                              Expanded(flex: 3, child: Text(e, style: TextStyle(fontWeight: FontWeight.bold))),
+                              Expanded(
+                                  flex: 3,
+                                  child: Text(widget.dataColumnHeadertexts?[e] ?? e,
+                                      style: const TextStyle(fontWeight: FontWeight.bold))),
                               Expanded(flex: 5, child: Text(str)),
                             ],
                           );
-                        }).toList() +
-                        [
-                          Row(
-                            children: widget.additonalColumnsLeft
-                                    ?.map(
-                                      (e) => Expanded(
-                                        flex: 1,
-                                        child: Padding(
-                                          padding: EdgeInsets.all(2),
-                                          child: (e.cellWidget != null)
-                                              ? e.cellWidget!(rowIndex)
-                                              : ElevatedButton(
-                                                  child: Icon(e.iconData),
-                                                  onPressed: () {
-                                                    if (e.onCellPressed != null) {
-                                                      e.onCellPressed!(
-                                                        rowIndex,
-                                                        0,
-                                                        (e.onClickReturnFieldNames ?? [])
-                                                            .map((cellname) => filterdata[rowIndex][cellname])
-                                                            .toList(),
-                                                        context,
-                                                      );
-                                                    }
-                                                  },
-                                                ),
-                                        ),
-                                      ),
-                                    )
-                                    .toList() ??
-                                [],
-                          ),
-                        ],
-                  ),
+                        }).toList(),
+                      ),
+                    ),
+                    Column(children: actions.map((e) => Padding(padding: const EdgeInsets.all(2), child: e)).toList()),
+                  ],
                 ),
-              ),
-            );
-          }).toList(),
+              );
+            }
+          },
         ),
       );
     }
@@ -470,12 +428,12 @@ class _DataGridViewState extends State<DataGridView> {
           Expanded(
             child: LayoutBuilder(
               builder: (context, contrains) {
-                if ((filterdata.length / widget.itemsPerPage) < currentPageNumber) {
+                if ((filterdata.length / currentItemsPerPage) < currentPageNumber) {
                   currentPageNumber = 0;
                 }
                 var data = generateColumnWidthAndRowHeight(
-                  filterdata.sublist(currentPageNumber * widget.itemsPerPage,
-                      min((currentPageNumber + 1) * widget.itemsPerPage, filterdata.length)),
+                  filterdata.sublist(currentPageNumber * currentItemsPerPage,
+                      min((currentPageNumber + 1) * currentItemsPerPage, filterdata.length)),
                   widget,
                   contrains.maxWidth,
                   scrollBarThickness,
@@ -591,9 +549,9 @@ class _DataGridViewState extends State<DataGridView> {
                                             physics: const AlwaysScrollableScrollPhysics(),
                                             children: [
                                               ...List.generate(
-                                                  min(filterdata.length - (currentPageNumber * widget.itemsPerPage),
-                                                      widget.itemsPerPage), (index_) {
-                                                var rowIndex = (currentPageNumber * widget.itemsPerPage) + index_;
+                                                  min(filterdata.length - (currentPageNumber * currentItemsPerPage),
+                                                      currentItemsPerPage), (index_) {
+                                                var rowIndex = (currentPageNumber * currentItemsPerPage) + index_;
                                                 // var rheight =
                                                 //     (rowHeights[index_] ?? widget.defaultRowHeight) + _extraCellPadding;
                                                 var rheight = getRowHeight(rowIndex);
@@ -664,8 +622,8 @@ class _DataGridViewState extends State<DataGridView> {
                                                   //Cells
                                                   // cacheExtent: 5000,
                                                   itemCount: min(
-                                                          filterdata.length - (currentPageNumber * widget.itemsPerPage),
-                                                          widget.itemsPerPage) +
+                                                          filterdata.length - (currentPageNumber * currentItemsPerPage),
+                                                          currentItemsPerPage) +
                                                       1,
                                                   controller: listViewVerticalController,
                                                   physics: const AlwaysScrollableScrollPhysics(),
@@ -673,8 +631,8 @@ class _DataGridViewState extends State<DataGridView> {
                                                     if (rowIndex_ >=
                                                         min(
                                                             filterdata.length -
-                                                                (currentPageNumber * widget.itemsPerPage),
-                                                            widget.itemsPerPage)) {
+                                                                (currentPageNumber * currentItemsPerPage),
+                                                            currentItemsPerPage)) {
                                                       return SizedBox(
                                                         // color: Colors.red,
                                                         width: columnWidths.values.toList().sum +
@@ -683,7 +641,7 @@ class _DataGridViewState extends State<DataGridView> {
                                                       );
                                                     }
                                                     var rowIndex =
-                                                        (currentPageNumber * widget.itemsPerPage) + rowIndex_;
+                                                        (currentPageNumber * currentItemsPerPage) + rowIndex_;
                                                     int cellIndec = -1;
                                                     var rheight = getRowHeight(rowIndex);
                                                     return Container(
@@ -893,12 +851,12 @@ class _DataGridViewState extends State<DataGridView> {
                                                 children: List.generate(
                                                         min(
                                                             filterdata.length -
-                                                                (currentPageNumber * widget.itemsPerPage),
-                                                            widget.itemsPerPage), (
+                                                                (currentPageNumber * currentItemsPerPage),
+                                                            currentItemsPerPage), (
                                                       rowIndex_,
                                                     ) {
                                                       var rowIndex =
-                                                          (currentPageNumber * widget.itemsPerPage) + rowIndex_;
+                                                          (currentPageNumber * currentItemsPerPage) + rowIndex_;
                                                       return SizedBox(
                                                         height: (rowHeights[rowIndex] ?? widget.defaultRowHeight),
                                                         // height: (rowHeights[rowIndex] ?? widget.defaultRowHeight) +
@@ -1065,40 +1023,244 @@ class _DataGridViewState extends State<DataGridView> {
   }
 
   int currentPageNumber = 0;
+
+  void _changePage(int newPage) {
+    final int perPage = currentItemsPerPage;
+    final int totalPages = (filterdata.length / perPage).ceil();
+    if (newPage < 0 || newPage >= totalPages || newPage == currentPageNumber) return;
+    setState(() {
+      currentPageNumber = newPage;
+    });
+    if (_mobileScrollController.hasClients) {
+      _mobileScrollController.jumpTo(0);
+    }
+    try {
+      if (listViewVerticalController.hasClients) {
+        listViewVerticalController.jumpTo(0);
+      }
+    } catch (_) {}
+  }
+
+  void _showJumpToPageDialog(BuildContext context, int totalPages) {
+    final TextEditingController textController = TextEditingController(text: (currentPageNumber + 1).toString());
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Go to Page"),
+          content: TextField(
+            controller: textController,
+            keyboardType: TextInputType.number,
+            autofocus: true,
+            decoration: InputDecoration(
+              labelText: "Page number (1 - $totalPages)",
+              border: const OutlineInputBorder(),
+            ),
+            onSubmitted: (value) {
+              final int? page = int.tryParse(value);
+              if (page != null && page >= 1 && page <= totalPages) {
+                _changePage(page - 1);
+                Navigator.of(context).pop();
+              }
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final int? page = int.tryParse(textController.text);
+                if (page != null && page >= 1 && page <= totalPages) {
+                  _changePage(page - 1);
+                  Navigator.of(context).pop();
+                }
+              },
+              child: const Text("Go"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildPageButton(int index, Color primaryColor, ThemeData theme) {
+    final bool isSelected = index == currentPageNumber;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 2),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(6),
+        onTap: () => _changePage(index),
+        child: Container(
+          constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+          decoration: BoxDecoration(
+            color: isSelected ? primaryColor : Colors.transparent,
+            borderRadius: BorderRadius.circular(6),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            (index + 1).toString(),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildPageNumberWidgets(int totalPages, Color primaryColor, ThemeData theme) {
+    if (totalPages <= 1) return [];
+
+    if (totalPages <= 7) {
+      return List.generate(totalPages, (index) => _buildPageButton(index, primaryColor, theme));
+    }
+
+    final List<Widget> widgets = [];
+    final Set<int> pagesToShow = {};
+
+    pagesToShow.add(0);
+    pagesToShow.add(totalPages - 1);
+
+    for (int i = max(0, currentPageNumber - 2); i <= min(totalPages - 1, currentPageNumber + 2); i++) {
+      pagesToShow.add(i);
+    }
+
+    final List<int> sortedPages = pagesToShow.toList()..sort();
+
+    for (int i = 0; i < sortedPages.length; i++) {
+      if (i > 0 && sortedPages[i] > sortedPages[i - 1] + 1) {
+        final int jumpTarget = ((sortedPages[i - 1] + sortedPages[i]) / 2).round();
+        widgets.add(
+          InkWell(
+            borderRadius: BorderRadius.circular(6),
+            onTap: () => _changePage(jumpTarget),
+            child: Container(
+              constraints: const BoxConstraints(minWidth: 26, minHeight: 28),
+              alignment: Alignment.center,
+              child: Text(
+                "...",
+                style: TextStyle(
+                  fontSize: 12,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+      widgets.add(_buildPageButton(sortedPages[i], primaryColor, theme));
+    }
+
+    return widgets;
+  }
+
   Widget showPages({required Widget child}) {
+    final int perPage = currentItemsPerPage;
+    final int totalItems = filterdata.length;
+    final int totalPages = (totalItems <= 0 || perPage <= 0) ? 1 : (totalItems / perPage).ceil();
+
+    if (currentPageNumber >= totalPages) {
+      currentPageNumber = 0;
+    }
+
+    final int startItem = totalItems == 0 ? 0 : (currentPageNumber * perPage) + 1;
+    final int endItem = min((currentPageNumber + 1) * perPage, totalItems);
+
+    final theme = Theme.of(context);
+    final primaryColor = theme.colorScheme.primary;
+
     return Column(
       children: [
         Expanded(child: child),
-        if (filterdata.length > widget.itemsPerPage)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Center(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ...List.generate(
-                          (filterdata.length / widget.itemsPerPage).ceil(),
-                          (index) => IconButton(
-                            onPressed: () {
-                              setState(() {
-                                currentPageNumber = index;
-                              });
-                            },
-                            style:
-                                IconButton.styleFrom(backgroundColor: index == currentPageNumber ? Colors.red : null),
-                            icon: Text((index + 1).toString()),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+        if (totalItems > perPage)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              border: Border(
+                top: BorderSide(
+                  color: theme.colorScheme.outlineVariant.withAlpha(80),
+                  width: 1,
                 ),
               ),
-            ],
+            ),
+            child: SafeArea(
+              top: false,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        visualDensity: VisualDensity.compact,
+                        padding: const EdgeInsets.all(4),
+                        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                        tooltip: "First Page",
+                        icon: const Icon(Icons.first_page, size: 20),
+                        onPressed: currentPageNumber > 0 ? () => _changePage(0) : null,
+                      ),
+                      IconButton(
+                        visualDensity: VisualDensity.compact,
+                        padding: const EdgeInsets.all(4),
+                        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                        tooltip: "Previous Page",
+                        icon: const Icon(Icons.chevron_left, size: 20),
+                        onPressed: currentPageNumber > 0 ? () => _changePage(currentPageNumber - 1) : null,
+                      ),
+                      Expanded(
+                        child: Center(
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: _buildPageNumberWidgets(totalPages, primaryColor, theme),
+                            ),
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        visualDensity: VisualDensity.compact,
+                        padding: const EdgeInsets.all(4),
+                        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                        tooltip: "Next Page",
+                        icon: const Icon(Icons.chevron_right, size: 20),
+                        onPressed: currentPageNumber < totalPages - 1 ? () => _changePage(currentPageNumber + 1) : null,
+                      ),
+                      IconButton(
+                        visualDensity: VisualDensity.compact,
+                        padding: const EdgeInsets.all(4),
+                        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                        tooltip: "Last Page",
+                        icon: const Icon(Icons.last_page, size: 20),
+                        onPressed: currentPageNumber < totalPages - 1 ? () => _changePage(totalPages - 1) : null,
+                      ),
+                    ],
+                  ),
+                  InkWell(
+                    borderRadius: BorderRadius.circular(4),
+                    onTap: () => _showJumpToPageDialog(context, totalPages),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      child: Text(
+                        "Page ${currentPageNumber + 1} of $totalPages  ($startItem-$endItem of $totalItems)",
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: theme.colorScheme.onSurfaceVariant,
+                          decoration: TextDecoration.underline,
+                          decorationStyle: TextDecorationStyle.dotted,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
       ],
     );

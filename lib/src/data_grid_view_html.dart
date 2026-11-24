@@ -132,11 +132,11 @@
 //     var str = """
 // <html>
 // <head>
-// <script> 
-// function SM(val) 
-// { 
-//      ${zoom == '400' ? 'console.debug(val);' : 'window.chrome.webview.postMessage(val);'}     
-// } 
+// <script>
+// function SM(val)
+// {
+//      ${zoom == '400' ? 'console.debug(val);' : 'window.chrome.webview.postMessage(val);'}
+// }
 // </script>
 // <style>
 // body{
@@ -172,7 +172,7 @@
 // }
 // .table {
 //     width: 100%;
-//     max-width: 100%; 
+//     max-width: 100%;
 //     background-color: transparent;
 //     border-collapse: collapse;
 // }
@@ -195,21 +195,19 @@
 // }
 // .table-dark td, .table-dark th, .table-dark thead th {
 //     border-color: #32383e!important;
-// } 
+// }
 // .table thead th {
 //     vertical-align: bottom;
 //     border-bottom: 0.5px solid #dee2e6;
 // }
- 
 
- 
 // .table td, .table th {
-//     padding: .25rem; 
+//     padding: .25rem;
 //     vertical-align: center;
 //     border-top: 0.5px solid #dee2e6;
 // }
 // th {
-//     text-align: inherit; 
+//     text-align: inherit;
 // }
 // .th
 // {
@@ -218,11 +216,11 @@
 // }
 // .th div:first-child
 // {
-//   flex:1; 
+//   flex:1;
 // }
 // .th div:last-child
-// { 
-//   width:20px; 
+// {
+//   width:20px;
 // }
 // </style>
 // </head>

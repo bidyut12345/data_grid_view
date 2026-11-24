@@ -20,6 +20,7 @@ dependencies:
   pdf: ^3.11.3
   printing: ^5.14.2
   syncfusion_flutter_xlsio: ^31.2.18
+  material_ui: ^1.11.1
   # collection: ^1.18.0
   # linked_scroll_controller: ^0.2.0
   # pdf: ^3.10.1
